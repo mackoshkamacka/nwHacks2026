@@ -16,6 +16,19 @@ const bodyFont = IBM_Plex_Sans({
   variable: "--font-body",
 });
 
+type MatchedIssue = {
+  issue: string;
+  userReports: number;
+  severity: "high" | "medium" | "low";
+  recommendation: string;
+};
+
+type CommunityInsights = {
+  totalUserReports: number;
+  topComplaint: string;
+  industryComparison: string;
+};
+
 type Analysis = {
   service: string;
   riskScore: number;
@@ -24,9 +37,12 @@ type Analysis = {
   redFlags: string[];
   cautions: string[];
   positives: string[];
-  clauseCount: number;
-  violations: Array<{ count: number; label: string }>;
+  matchedIssues: MatchedIssue[];
+  communityInsights: CommunityInsights;
+  totalUserAnalyses: number;
 };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6767';
 
 const extractHost = (value: string) => {
   try {
@@ -36,32 +52,21 @@ const extractHost = (value: string) => {
   }
 };
 
-const mockAnalysis: Analysis = {
+const initialAnalysis: Analysis = {
   service: "Untitled Service",
-  riskScore: 76,
-  summary:
-    "Gemini detects broad AI-training permissions, unrestricted data resale, and a forced arbitration clause that removes your right to sue.",
-  snapshot: "Auto-run 4s ago",
-  redFlags: [
-    "Company may use your photos, voice, and likeness to train AI models without compensation",
-    "Terms can change at any moment with only an in-app banner as notice",
-    "Data shared with 'trusted partners' (1,000+ trackers) without an opt-out",
-  ],
-  cautions: [
-    "Arbitration is mandatory and bans class actions",
-    "Deletes still keep backups indefinitely",
-    "Location pinged every 5 minutes, even when app closed",
-  ],
-  positives: [
-    "GDPR export supported",
-    "Kids mode limits personalized ads",
-  ],
-  clauseCount: 47,
-  violations: [
-    { count: 12483, label: "Sold data despite opt-out" },
-    { count: 8932, label: "Account deletion rejected" },
-    { count: 4110, label: "Unwanted AI training" },
-  ],
+  riskScore: 0,
+  summary: "Paste your Terms of Service and click analyze to compare against user-reported issues.",
+  snapshot: "Awaiting input",
+  redFlags: [],
+  cautions: [],
+  positives: [],
+  matchedIssues: [],
+  communityInsights: {
+    totalUserReports: 0,
+    topComplaint: "N/A",
+    industryComparison: "N/A",
+  },
+  totalUserAnalyses: 0,
 };
 
 const severityBadge = {
@@ -73,32 +78,65 @@ const severityBadge = {
 export default function AddTosPage() {
   const [tosText, setTosText] = useState("");
   const [tosUrl, setTosUrl] = useState("");
-  const [analysis, setAnalysis] = useState<Analysis>(mockAnalysis);
+  const [serviceName, setServiceName] = useState("");
+  const [analysis, setAnalysis] = useState<Analysis>(initialAnalysis);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
   const derivedServiceName = useMemo(() => {
+    if (serviceName) return serviceName;
     if (analysis.service !== "Untitled Service") return analysis.service;
     if (tosUrl) {
       const host = extractHost(tosUrl);
-      if (host) return host.split(".")[0]?.toUpperCase() || mockAnalysis.service;
+      if (host) return host.split(".")[0]?.toUpperCase() || initialAnalysis.service;
     }
-    return mockAnalysis.service;
-  }, [analysis.service, tosUrl]);
+    return initialAnalysis.service;
+  }, [analysis.service, tosUrl, serviceName]);
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!tosText.trim()) {
+      setError("Please paste your Terms of Service text");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      const textSignal = tosText.trim().length;
-      const scoreDelta = Math.min(15, Math.floor(textSignal / 800));
-      const score = Math.min(95, Math.max(30, mockAnalysis.riskScore + scoreDelta));
-      setAnalysis({
-        ...mockAnalysis,
-        service: tosUrl ? extractHost(tosUrl) || mockAnalysis.service : mockAnalysis.service,
-        riskScore: score,
-        snapshot: `Parsed ${new Date().toLocaleTimeString()}`,
+    setError("");
+
+    try {
+      const response = await fetch(`${API_URL}/enterprise-compare`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tos_text: tosText,
+          service_name: serviceName || derivedServiceName,
+        }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to analyze TOS");
+      }
+
+      setAnalysis({
+        service: serviceName || derivedServiceName,
+        riskScore: data.riskScore || 0,
+        summary: data.summary || "",
+        snapshot: `Analyzed ${new Date().toLocaleTimeString()}`,
+        redFlags: data.redFlags || [],
+        cautions: data.cautions || [],
+        positives: data.positives || [],
+        matchedIssues: data.matchedIssues || [],
+        communityInsights: data.communityInsights || initialAnalysis.communityInsights,
+        totalUserAnalyses: data.totalUserAnalyses || 0,
+      });
+      setHasAnalyzed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   };
 
   return (
@@ -118,11 +156,11 @@ export default function AddTosPage() {
             <p className="text-xs uppercase tracking-widest text-slate-400">Input</p>
             <div className="mt-4 space-y-6">
               <div>
-                <label className="mb-2 block text-sm text-slate-300">Public URL (optional)</label>
+                <label className="mb-2 block text-sm text-slate-300">Service Name</label>
                 <input
-                  value={tosUrl}
-                  onChange={(event) => setTosUrl(event.target.value)}
-                  placeholder="https://example.com/terms"
+                  value={serviceName}
+                  onChange={(event) => setServiceName(event.target.value)}
+                  placeholder="Your Company Name"
                   className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none"
                 />
               </div>
@@ -145,87 +183,84 @@ export default function AddTosPage() {
                   value={tosText}
                   onChange={(event) => setTosText(event.target.value)}
                   placeholder="Paste 500-10,000 words for best results"
-                  rows={10}
+                  rows={14}
                   className="w-full rounded-2xl border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none"
                 />
               </div>
+              {error && (
+                <div className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-3 text-rose-300 text-sm">
+                  {error}
+                </div>
+              )}
               <button
                 onClick={handleAnalyze}
-                className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200"
+                disabled={loading}
+                className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Parsing with Gemini..." : "Run Gemini parse"}
+                {loading ? "Analyzing with Gemini..." : "Compare Against User Data"}
               </button>
               <p className="text-xs text-slate-500">
-                Storage note: raw ToS text is encrypted at rest. Only derived analytics are shared with the community intelligence layer.
+                Your TOS will be compared against {analysis.totalUserAnalyses || "community"} user-submitted analyses to identify potential issues.
               </p>
             </div>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-slate-400">Gemini output</p>
-                <h2 className="text-2xl font-semibold text-white">{derivedServiceName}</h2>
-                <p className="text-xs text-slate-400">{analysis.snapshot}</p>
+            {!hasAnalyzed ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Community Analysis</p>
+                <p className="text-slate-400 text-sm">Paste your Terms of Service and click analyze to compare against user-reported issues.</p>
               </div>
-              <div className="text-right">
-                <p className="text-4xl font-bold text-white">{analysis.riskScore}/100</p>
-              </div>
-            </div>
-            <p className="mt-4 text-sm text-slate-200">{analysis.summary}</p>
-            <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-              <p className="text-xs uppercase tracking-widest text-slate-400">Community violations</p>
-              <div className="mt-3 space-y-2 text-sm text-slate-200">
-                {analysis.violations.map((violation) => (
-                  <div key={violation.label} className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-950/40 px-3 py-2">
-                    <span>{violation.label}</span>
-                    <span className="font-semibold text-white">{violation.count.toLocaleString()}</span>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Community Analysis</p>
+                    <h2 className="text-2xl font-semibold text-white">{derivedServiceName}</h2>
+                    <p className="text-xs text-slate-400">{analysis.snapshot}</p>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="text-right">
+                    <p className="text-4xl font-bold text-white">{analysis.riskScore}/100</p>
+                    <p className="text-xs text-slate-400">Risk Score</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-slate-200">{analysis.summary}</p>
+
+                {/* Matched Issues */}
+                {analysis.matchedIssues.length > 0 && (
+                  <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Issues Matched to User Complaints</p>
+                    <p className="mt-2 text-[10px] text-slate-500 italic">
+                      Disclaimer: This tool is not a substitute for legal advice. Please consult qualified legal counsel before making changes to your Terms of Service.
+                    </p>
+                    <div className="mt-3 space-y-3 text-sm text-slate-200">
+                      {analysis.matchedIssues.map((issue, index) => (
+                        <div key={index} className="rounded-xl border border-white/5 bg-slate-950/40 p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="flex-1">{issue.issue}</span>
+                            <span className={`${severityBadge[issue.severity]} rounded-full px-2 py-0.5 text-xs uppercase`}>
+                              {issue.severity}
+                            </span>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between text-xs">
+                            <span className="text-slate-400">{issue.userReports.toLocaleString()} similar user reports</span>
+                          </div>
+                          <p className="mt-2 text-xs text-cyan-300">💡 {issue.recommendation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-3">
-          <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/70 p-6 lg:col-span-2">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-slate-400">Urgent Concern</p>
-              </div>
-              <span className={`${severityBadge.high} rounded-full px-3 py-1 text-xs uppercase tracking-wide`}>rd-flgs</span>
-            </div>
-            <ul className="space-y-3 text-sm text-slate-200">
-              {analysis.redFlags.map((flag) => (
-                <li key={flag} className="rounded-2xl border border-rose-400/20 bg-rose-950/30 p-4">{flag}</li>
-              ))}
-            </ul>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-widest text-slate-400">Moderate concerns</p>
-                  <span className={`${severityBadge.medium} rounded-full px-2 py-1 text-[11px] uppercase tracking-wide`}>Watch</span>
-                </div>
-                <ul className="space-y-2 text-sm text-slate-200">
-                  {analysis.cautions.map((item) => (
-                    <li key={item} className="rounded-xl border border-amber-300/20 bg-amber-950/20 p-3">{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="text-xs uppercase tracking-widest text-slate-400">Positive clauses</p>
-                  <span className={`${severityBadge.low} rounded-full px-2 py-1 text-[11px] uppercase tracking-wide`}>Good</span>
-                </div>
-                <ul className="space-y-2 text-sm text-slate-200">
-                  {analysis.positives.map((item) => (
-                    <li key={item} className="rounded-xl border border-emerald-300/20 bg-emerald-950/20 p-3">{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );

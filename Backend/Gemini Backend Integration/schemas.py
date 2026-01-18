@@ -100,3 +100,86 @@ SUBMISSION_SCHEMA = {
         "wordCount"
     ]
 }
+
+ENTERPRISE_COMPARISON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "riskScore": {
+            "type": "number",
+            "description": "Overall risk score from 0-100 based on user-flagged issues"
+        },
+        "summary": {
+            "type": "string",
+            "description": "Summary of how this TOS compares to user-reported issues"
+        },
+        "matchedIssues": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "issue": {
+                        "type": "string",
+                        "description": "The problematic clause or issue found in the enterprise TOS"
+                    },
+                    "userReports": {
+                        "type": "number",
+                        "description": "Number of times users have flagged similar issues"
+                    },
+                    "severity": {
+                        "type": "string",
+                        "enum": ["high", "medium", "low"],
+                        "description": "Severity level based on user feedback"
+                    },
+                    "recommendation": {
+                        "type": "string",
+                        "description": "Suggested fix or improvement"
+                    }
+                },
+                "required": ["issue", "userReports", "severity", "recommendation"]
+            },
+            "description": "Issues in the enterprise TOS that match user-reported problems"
+        },
+        "redFlags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Critical issues that users frequently complain about"
+        },
+        "cautions": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Moderate concerns based on user feedback"
+        },
+        "positives": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Clauses that users respond well to"
+        },
+        "communityInsights": {
+            "type": "object",
+            "properties": {
+                "totalUserReports": {
+                    "type": "number",
+                    "description": "Total number of user reports analyzed"
+                },
+                "topComplaint": {
+                    "type": "string",
+                    "description": "Most common user complaint category"
+                },
+                "industryComparison": {
+                    "type": "string",
+                    "description": "How this TOS compares to industry average"
+                }
+            },
+            "required": ["totalUserReports", "topComplaint", "industryComparison"]
+        }
+    },
+    "required": [
+        "riskScore",
+        "summary",
+        "matchedIssues",
+        "redFlags",
+        "cautions",
+        "positives",
+        "communityInsights"
+    ]
+}
