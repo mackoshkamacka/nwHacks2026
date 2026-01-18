@@ -144,7 +144,7 @@ export default function AddTos() {
           className="group flex items-center gap-2 text-slate-500 hover:text-rose-500 transition-colors w-fit"
         >
           <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
-          <span className="text-[10px] font-black uppercase tracking-widest">Return to Console</span>
+          <span className="text-[10px] font-black uppercase tracking-widest">Return to Dashboard</span>
         </Link>
 
         {/* Protocol Header */}
