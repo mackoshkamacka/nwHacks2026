@@ -64,7 +64,7 @@ function HeaderNav() {
     <>
       <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 px-6 py-4 text-sm text-black backdrop-blur dark:border-white/10 dark:bg-black/70 dark:text-white">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
-          <Link href="/" className="flex items-center group">
+          <Link href={user ? "/customer-dashboard" : "/"} className="flex items-center group">
             <div className="relative h-16 w-48"> 
               <Image 
                 src="/logo.svg" 
@@ -75,14 +75,22 @@ function HeaderNav() {
               />
             </div>
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-4">
             {user ? (
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="rounded-full border border-slate-200/60 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-900 shadow-sm transition hover:border-slate-400 hover:shadow"
-              >
-                Profile
-              </button>
+              <>
+                <Link
+                  href="/customer-dashboard"
+                  className="rounded-full border border-slate-200/60 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white shadow-sm transition hover:border-slate-400 hover:shadow"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => setDrawerOpen(true)}
+                  className="rounded-full border border-slate-200/60 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-slate-900 shadow-sm transition hover:border-slate-400 hover:shadow"
+                >
+                  Profile
+                </button>
+              </>
             ) : (
               <>
                 <Link className="font-medium transition hover:text-rose-500" href="/login">

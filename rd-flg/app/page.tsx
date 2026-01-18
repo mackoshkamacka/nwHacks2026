@@ -57,8 +57,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="mb-10 max-w-2xl text-lg text-slate-400 leading-relaxed">
-            RD-FLG decodes the fine print in real-time. Don't just agree to terms—audit them. 
-            Identify predatory clauses before they become binding.
+            Stop clicking 'I Agree' on terms you'll never read. <b>rdflg</b> analyzes every clause instantly, on your wavelength. 
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             {/* GRADIENT BUTTON WITH ENHANCED INTERACTION */}
