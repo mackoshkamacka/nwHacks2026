@@ -98,12 +98,6 @@ export default function Login() {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo/Brand Branding */}
         <div className="flex flex-col items-center mb-8">
-          <Link href="/" className="flex items-center gap-2 mb-4 group">
-            <div className="h-8 w-8 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.5)] transition-transform group-hover:scale-110 flex items-center justify-center">
-                <ShieldAlert size={18} className="text-white" />
-            </div>
-            <span className="font-[var(--font-heading)] text-2xl font-bold tracking-tight text-white transition-colors">RD-FLG</span>
-          </Link>
           <div className="h-[1px] w-12 bg-gradient-to-r from-transparent via-rose-500/50 to-transparent mb-4" />
           <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-rose-500/80">enterprise & consumer Login page</h2>
         </div>

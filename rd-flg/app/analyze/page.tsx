@@ -38,13 +38,7 @@ export default function AnalyzePage() {
 
       <div className="relative z-10 mx-auto max-w-5xl">
         {/* Header */}
-        <header className="flex items-center justify-between mb-12">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded bg-rose-600 flex items-center justify-center shadow-[0_0_15px_rgba(225,29,72,0.5)]">
-              <ShieldAlert size={18} />
-            </div>
-            <span className="font-[var(--font-heading)] text-xl font-bold tracking-tight">RD-FLG // AUDIT</span>
-          </div>
+        <header className="flex items-center justify-between mb-8">
           <div className="text-[10px] font-black uppercase tracking-widest text-rose-500 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
             Secure Session Active
           </div>

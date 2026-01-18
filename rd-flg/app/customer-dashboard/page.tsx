@@ -280,6 +280,32 @@ export default function CustomerDashboard() {
                           <p className="text-[10px] uppercase text-sky-400/60 font-bold">Positives</p>
                         </div>
                       </div>
+                      {entry.redFlags.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-red-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                            <CheckCircle size={12} /> RED FLAGS
+                          </p>
+                          <ul className="space-y-2">
+                            {entry.redFlags.map((redFlags: string, i: number) => (
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-red-500/50">{redFlags}</li>
+                            ))}
+                          </ul>
+                          
+                        </div>
+                      )}
+                      {entry.cautions.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-orange-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                            <CheckCircle size={12} /> Cautions
+                          </p>
+                          <ul className="space-y-2">
+                            {entry.cautions.map((cautions: string, i: number) => (
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-orange-500/50">{cautions}</li>
+                            ))}
+                          </ul>
+                          
+                        </div>
+                      )}
 
                       {entry.positives.length > 0 && (
                         <div>
@@ -291,6 +317,7 @@ export default function CustomerDashboard() {
                               <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-sky-500/50">{positive}</li>
                             ))}
                           </ul>
+                          
                         </div>
                       )}
                       <Link href={`/analysis/${entry.id}`} className="inline-flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors">

@@ -33,21 +33,16 @@ export default function Home() {
       <div className="animate-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,_rgba(37,99,235,0.3),_transparent_60%)]" style={{ animationDelay: '-4s' }} />
 
       {/* Navigation */}
-      <nav className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-8">
+      <nav className="relative z-20 mx-auto flex max-w-7xl items-center justify-center px-6 py-8">
         <div className="flex items-center gap-2 group cursor-pointer">
-          <div className="h-7 w-7 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.6)] flex items-center justify-center transition-transform group-hover:scale-110">
-            <ShieldAlert size={16} className="text-white" />
+          {/* <div className="h-7 w-7 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.6)] flex items-center justify-center transition-transform group-hover:scale-110">
+        <ShieldAlert size={16} className="text-white" />
+          </div> */}
+          {/* <span className="font-[var(--font-heading)] text-xl font-bold tracking-tight text-white">RD-FLG</span> */}
+          <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <a href="#personal" className="hover:text-rose-500 transition-colors">Individual Defense</a>
+            <a href="#enterprise" className="hover:text-blue-500 transition-colors">Enterprise Risk</a>
           </div>
-          <span className="font-[var(--font-heading)] text-xl font-bold tracking-tight text-white">RD-FLG</span>
-        </div>
-        <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-          <a href="#personal" className="hover:text-rose-500 transition-colors">Individual Defense</a>
-          <a href="#enterprise" className="hover:text-blue-500 transition-colors">Enterprise Risk</a>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:bg-white hover:text-black transition-all">
-            Access Console
-          </Link>
         </div>
       </nav>
 
@@ -55,10 +50,6 @@ export default function Home() {
         
         {/* Hero Section */}
         <section className="flex flex-col items-center text-center mb-32">
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-rose-500/20 bg-rose-500/5 px-4 py-1.5 text-[10px] font-black tracking-[0.3em] text-rose-500 uppercase">
-            <Activity size={12} className="animate-pulse" />
-            Vigilance Protocol Active
-          </div>
           <h1 className="mb-8 max-w-5xl font-[var(--font-heading)] text-6xl font-bold leading-[1] tracking-tighter text-white lg:text-8xl">
             The end of the <br />
             <span className="bg-gradient-to-r from-rose-500 via-orange-500 to-blue-400 bg-clip-text text-transparent">
