@@ -1,6 +1,20 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
+
+const headingFont = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-heading",
+});
+
+const bodyFont = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
 
 import { AuthProvider } from '@/lib/AuthContext'; 
 
@@ -28,6 +42,23 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 px-6 py-4 text-sm text-black backdrop-blur dark:border-white/10 dark:bg-black/70 dark:text-white">
+          <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
+            <Link href="/consumer" className="font-semibold tracking-tight">
+              rd-flg
+            </Link>
+            <nav className="flex gap-4">
+              <Link className="transition hover:text-sky-500" href="/consumer">
+                Dashboard
+              </Link>
+              <Link className="transition hover:text-sky-500" href="/consumer/add-tos">
+                Add ToS
+              </Link>
+            </nav>
+          </div>
+        </header>
+        <div className="pt-4">{children}</div>
       > <AuthProvider>
             {children}
         </AuthProvider>
