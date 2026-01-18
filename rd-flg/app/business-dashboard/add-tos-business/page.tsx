@@ -3,6 +3,31 @@
 import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 
+const headingFont = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-heading",
+});
+
+const bodyFont = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
+
+type MatchedIssue = {
+  issue: string;
+  userReports: number;
+  severity: "high" | "medium" | "low";
+  recommendation: string;
+};
+
+type CommunityInsights = {
+  totalUserReports: number;
+  topComplaint: string;
+  industryComparison: string;
+};
+
 type Analysis = {
   service: string;
   riskScore: number;
@@ -11,9 +36,12 @@ type Analysis = {
   redFlags: string[];
   cautions: string[];
   positives: string[];
-  clauseCount: number;
-  violations: Array<{ count: number; label: string }>;
+  matchedIssues: MatchedIssue[];
+  communityInsights: CommunityInsights;
+  totalUserAnalyses: number;
 };
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:6767';
 
 const extractHost = (value: string) => {
   try {
@@ -23,16 +51,21 @@ const extractHost = (value: string) => {
   }
 };
 
-const mockInitialData: Analysis = {
-  service: "Ready to Analyze",
+const initialAnalysis: Analysis = {
+  service: "Untitled Service",
   riskScore: 0,
-  summary: "Paste text and click 'Run Gemini Parse' to begin analysis.",
-  snapshot: "Waiting for input...",
+  summary: "Paste your Terms of Service and click analyze to compare against user-reported issues.",
+  snapshot: "Awaiting input",
   redFlags: [],
   cautions: [],
   positives: [],
-  clauseCount: 0,
-  violations: [],
+  matchedIssues: [],
+  communityInsights: {
+    totalUserReports: 0,
+    topComplaint: "N/A",
+    industryComparison: "N/A",
+  },
+  totalUserAnalyses: 0,
 };
 
 const severityBadge = {
@@ -45,55 +78,62 @@ export default function AddTosPage() {
   const [mounted, setMounted] = useState(false);
   const [tosText, setTosText] = useState("");
   const [tosUrl, setTosUrl] = useState("");
-  const [analysis, setAnalysis] = useState<Analysis>(mockInitialData);
+  const [serviceName, setServiceName] = useState("");
+  const [analysis, setAnalysis] = useState<Analysis>(initialAnalysis);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [error, setError] = useState("");
+  const [hasAnalyzed, setHasAnalyzed] = useState(false);
 
   const derivedServiceName = useMemo(() => {
-    if (analysis.service !== "Ready to Analyze") return analysis.service;
+    if (serviceName) return serviceName;
+    if (analysis.service !== "Untitled Service") return analysis.service;
     if (tosUrl) {
       const host = extractHost(tosUrl);
-      if (host) return host.split(".")[0]?.toUpperCase();
+      if (host) return host.split(".")[0]?.toUpperCase() || initialAnalysis.service;
     }
-    return "New Policy";
-  }, [analysis.service, tosUrl]);
+    return initialAnalysis.service;
+  }, [analysis.service, tosUrl, serviceName]);
 
   const handleAnalyze = async () => {
     if (!tosText.trim()) {
-      alert("Please paste some text first!");
+      setError("Please paste your Terms of Service text");
       return;
     }
 
     setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch("/api/analyze-tos", {
+      const response = await fetch(`${API_URL}/enterprise-compare`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tos_text: tosText,
-          service_name: derivedServiceName,
+          service_name: serviceName || derivedServiceName,
         }),
       });
 
-      if (!response.ok)
-        throw new Error(`Server responded with ${response.status}`);
-
       const data = await response.json();
 
-      // Merge with mockInitialData to ensure all arrays exist
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to analyze TOS");
+      }
+
       setAnalysis({
-        ...mockInitialData,
-        ...data,
-        violations: data.violations || data.matchedIssues || [],
+        service: serviceName || derivedServiceName,
+        riskScore: data.riskScore || 0,
+        summary: data.summary || "",
         snapshot: `Analyzed ${new Date().toLocaleTimeString()}`,
+        redFlags: data.redFlags || [],
+        cautions: data.cautions || [],
+        positives: data.positives || [],
+        matchedIssues: data.matchedIssues || [],
+        communityInsights: data.communityInsights || initialAnalysis.communityInsights,
+        totalUserAnalyses: data.totalUserAnalyses || 0,
       });
-    } catch (error) {
-      console.error("❌ [Parser] Sync Error:", error);
-      alert("Analysis failed. Ensure your API route is returning valid JSON.");
+      setHasAnalyzed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -130,14 +170,12 @@ export default function AddTosPage() {
             </p>
             <div className="mt-4 space-y-6">
               <div>
-                <label className="mb-2 block text-sm text-slate-300">
-                  Public URL (optional)
-                </label>
+                <label className="mb-2 block text-sm text-slate-300">Service Name</label>
                 <input
-                  value={tosUrl}
-                  onChange={(event) => setTosUrl(event.target.value)}
-                  placeholder="https://example.com/terms"
-                  className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                  value={serviceName}
+                  onChange={(event) => setServiceName(event.target.value)}
+                  placeholder="Your Company Name"
+                  className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none"
                 />
               </div>
               <div>
@@ -160,97 +198,82 @@ export default function AddTosPage() {
                 <textarea
                   value={tosText}
                   onChange={(event) => setTosText(event.target.value)}
-                  placeholder="Paste text here..."
-                  rows={10}
-                  className="w-full rounded-2xl border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                  placeholder="Paste 500-10,000 words for best results"
+                  rows={14}
+                  className="w-full rounded-2xl border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-white placeholder:text-slate-600 focus:border-cyan-400 focus:outline-none"
                 />
               </div>
+              {error && (
+                <div className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-3 text-rose-300 text-sm">
+                  {error}
+                </div>
+              )}
               <button
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-cyan-400 disabled:opacity-50"
+                className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Parsing with Gemini..." : "Run Gemini parse"}
+                {loading ? "Analyzing with Gemini..." : "Compare Against User Data"}
               </button>
+              <p className="text-xs text-slate-500">
+                Your TOS will be compared against {analysis.totalUserAnalyses || "community"} user-submitted analyses to identify potential issues.
+              </p>
             </div>
           </div>
 
-          {/* Results Side */}
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-widest text-slate-400">
-                  Gemini output
-                </p>
-                <h2 className="text-2xl font-semibold text-white">
-                  {derivedServiceName}
-                </h2>
-                <p className="text-xs uppercase tracking-wider text-slate-500">
-                  {analysis.snapshot}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-4xl font-bold text-cyan-400">
-                  {analysis.riskScore}/100
-                </p>
-                <p className="text-xs uppercase text-slate-500">Risk Score</p>
-              </div>
-            </div>
-            <p className="mt-4 text-sm leading-relaxed text-slate-300">
-              {analysis.summary}
-            </p>
-
-            {/* Community violations */}
-            {(analysis.violations?.length ?? 0) > 0 && (
-              <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
-                <p className="mb-3 text-xs uppercase tracking-widest text-slate-400">
-                  Community violations
-                </p>
-                <div className="space-y-2 text-sm text-slate-200">
-                  {analysis.violations.map((violation, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-950/40 px-3 py-2"
-                    >
-                      <span className="text-slate-300">{violation.label}</span>
-                      <span className="font-mono font-semibold text-cyan-300">
-                        {violation.count?.toLocaleString() ?? 0}
-                      </span>
-                    </div>
-                  ))}
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
+            {!hasAnalyzed ? (
+              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
+                <div className="w-16 h-16 rounded-full border-2 border-dashed border-slate-600 flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
                 </div>
+                <p className="text-xs uppercase tracking-widest text-slate-500 mb-2">Community Analysis</p>
+                <p className="text-slate-400 text-sm">Paste your Terms of Service and click analyze to compare against user-reported issues.</p>
               </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Community Analysis</p>
+                    <h2 className="text-2xl font-semibold text-white">{derivedServiceName}</h2>
+                    <p className="text-xs text-slate-400">{analysis.snapshot}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-4xl font-bold text-white">{analysis.riskScore}/100</p>
+                    <p className="text-xs text-slate-400">Risk Score</p>
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-slate-200">{analysis.summary}</p>
+
+                {/* Matched Issues */}
+                {analysis.matchedIssues.length > 0 && (
+                  <div className="mt-6 rounded-2xl border border-white/10 bg-slate-900/50 p-4">
+                    <p className="text-xs uppercase tracking-widest text-slate-400">Issues Matched to User Complaints</p>
+                    <p className="mt-2 text-[10px] text-slate-500 italic">
+                      Disclaimer: This tool is not a substitute for legal advice. Please consult qualified legal counsel before making changes to your Terms of Service.
+                    </p>
+                    <div className="mt-3 space-y-3 text-sm text-slate-200">
+                      {analysis.matchedIssues.map((issue, index) => (
+                        <div key={index} className="rounded-xl border border-white/5 bg-slate-950/40 p-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="flex-1">{issue.issue}</span>
+                            <span className={`${severityBadge[issue.severity]} rounded-full px-2 py-0.5 text-xs uppercase`}>
+                              {issue.severity}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-xs text-cyan-300">💡 {issue.recommendation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </section>
 
-        {/* Details Section */}
-        {analysis.riskScore > 0 && (
-          <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/70 p-6">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Urgent Concerns (Red Flags)
-                </p>
-                <span
-                  className={`${severityBadge.high} rounded-full px-3 py-1 text-xs uppercase tracking-widest`}
-                >
-                  rd-flgs
-                </span>
-              </div>
-              <ul className="grid gap-3 md:grid-cols-2">
-                {(analysis.redFlags ?? []).map((flag, idx) => (
-                  <li
-                    key={idx}
-                    className="rounded-2xl border border-rose-400/20 bg-rose-950/30 p-4 text-sm text-rose-100"
-                  >
-                    {flag}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
       </main>
     </div>
   );
