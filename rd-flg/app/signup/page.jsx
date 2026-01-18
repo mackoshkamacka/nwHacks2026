@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, User, ShieldCheck, Zap, Fingerprint, Lock } from 'lucide-react';
+import { Building2, User, ShieldCheck, Fingerprint, Lock } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -29,6 +29,11 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  // Theme Constants
+  const isBusiness = accountType === 'business';
+  const themeColor = isBusiness ? 'blue' : 'rose';
+  const themeGlow = isBusiness ? 'rgba(37,99,235,0.3)' : 'rgba(225,29,72,0.3)';
+
   const handleEmailSignup = async (e) => {
     e.preventDefault();
     setError('');
@@ -44,7 +49,7 @@ export default function Signup() {
         createdAt: new Date()
       });
 
-      const destination = accountType === 'business' ? '/business-dashboard' : '/customer-dashboard';
+      const destination = isBusiness ? '/business-dashboard' : '/customer-dashboard';
       router.push(destination);
     } catch (err) {
       setError(err.message);
@@ -66,7 +71,7 @@ export default function Signup() {
         createdAt: new Date()
       }, { merge: true });
 
-      const destination = accountType === 'business' ? '/business-dashboard' : '/customer-dashboard';
+      const destination = isBusiness ? '/business-dashboard' : '/customer-dashboard';
       router.push(destination);
     } catch (err) {
       setError(err.message);
@@ -75,26 +80,46 @@ export default function Signup() {
   };
 
   return (
-    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen flex items-center justify-center bg-[#0a0505] text-slate-50 px-4 py-12 overflow-x-hidden`}>
-      {/* Red/Orange Warm Glows */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,_rgba(225,29,72,0.15),_transparent_50%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_100%_100%,_rgba(249,115,22,0.05),_transparent_40%)]" />
+    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen flex items-center justify-center bg-[#060505] text-slate-50 px-4 py-12 overflow-hidden`}>
+      
+      {/* DYNAMIC BACKGROUND GLOWS */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes pulse-bg {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.1); }
+        }
+        .animate-theme-glow {
+          animation: pulse-bg 8s ease-in-out infinite;
+        }
+      `}} />
+
+      {/* Pulsating Theme Glow (shifts position/color based on selection) */}
+      <div 
+        className="animate-theme-glow pointer-events-none absolute inset-0 transition-all duration-1000"
+        style={{ 
+          background: `radial-gradient(circle at ${isBusiness ? '80% 80%' : '20% 20%'}, ${themeGlow}, transparent 60%)` 
+        }} 
+      />
 
       <div className="relative z-10 w-full max-w-xl">
         <div className="flex flex-col items-center mb-8 text-center">
           <Link href="/" className="flex items-center gap-2 mb-6 group">
-            <div className="h-10 w-10 rounded bg-rose-600 shadow-[0_0_25px_rgba(225,29,72,0.5)] transition-transform group-hover:scale-110 flex items-center justify-center">
+            <div className={`h-10 w-10 rounded shadow-[0_0_25px_${themeGlow}] transition-all duration-500 group-hover:scale-110 flex items-center justify-center ${isBusiness ? 'bg-blue-600' : 'bg-rose-600'}`}>
                 <ShieldCheck className="text-white" size={24} />
             </div>
             <span className="font-[var(--font-heading)] text-3xl font-bold tracking-tight text-white">RD-FLG</span>
           </Link>
           <h2 className="text-3xl font-bold text-white font-[var(--font-heading)] tracking-tight">Establish Identity</h2>
-          <p className="text-rose-500/60 mt-2 uppercase text-[10px] tracking-[0.3em] font-bold">Initialize Legal Protection Protocol</p>
+          <p className={`mt-2 uppercase text-[10px] tracking-[0.3em] font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-500/60' : 'text-rose-500/60'}`}>
+            Initialize {isBusiness ? 'Enterprise' : 'Legal'} Protection Protocol
+          </p>
         </div>
         
-        <div className="rounded-3xl border border-rose-500/20 bg-rose-500/5 p-8 backdrop-blur-2xl shadow-2xl">
+        {/* MAIN CARD - Dynamically colored borders */}
+        <div className={`rounded-3xl border transition-all duration-500 bg-[#120808]/40 backdrop-blur-2xl shadow-2xl p-8 ${isBusiness ? 'border-blue-500/20' : 'border-rose-500/20'}`}>
+          
           {error && (
-            <div className="mb-6 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 animate-pulse">
+            <div className={`mb-6 rounded-xl border px-4 py-3 text-sm animate-pulse ${isBusiness ? 'border-blue-500/30 bg-blue-500/10 text-blue-200' : 'border-rose-500/30 bg-rose-500/10 text-rose-200'}`}>
               <span className="font-bold uppercase text-[10px] block mb-1">Registration Blocked</span>
               {error}
             </div>
@@ -106,11 +131,12 @@ export default function Signup() {
               Select Operating Mode
             </label>
             <div className="grid grid-cols-2 gap-4">
+              {/* Individual Toggle */}
               <button
                 type="button"
                 onClick={() => setAccountType('customer')}
                 className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all duration-300 ${
-                  accountType === 'customer'
+                  !isBusiness
                     ? 'border-rose-600 bg-rose-600/10 text-rose-400 shadow-[0_0_20px_rgba(225,29,72,0.2)]'
                     : 'border-white/5 bg-white/5 text-slate-500 hover:border-white/10'
                 }`}
@@ -120,12 +146,13 @@ export default function Signup() {
                 <span className="text-[9px] opacity-60 uppercase mt-1 tracking-tighter">Personal Defense</span>
               </button>
               
+              {/* Enterprise Toggle - Now Blue */}
               <button
                 type="button"
                 onClick={() => setAccountType('business')}
                 className={`flex flex-col items-center justify-center p-5 rounded-2xl border-2 transition-all duration-300 ${
-                  accountType === 'business'
-                    ? 'border-emerald-600 bg-emerald-600/10 text-emerald-400 shadow-[0_0_20px_rgba(5,150,105,0.2)]'
+                  isBusiness
+                    ? 'border-blue-600 bg-blue-600/10 text-blue-400 shadow-[0_0_20px_rgba(37,99,235,0.2)]'
                     : 'border-white/5 bg-white/5 text-slate-500 hover:border-white/10'
                 }`}
               >
@@ -136,11 +163,10 @@ export default function Signup() {
             </div>
           </div>
 
-          {/* Google Sign Up */}
           <button
             onClick={handleGoogleSignup}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white px-4 py-3.5 rounded-xl text-slate-950 font-black text-xs tracking-widest transition-all hover:bg-rose-50 mb-6 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-3 bg-white px-4 py-3.5 rounded-xl text-slate-950 font-black text-xs tracking-widest transition-all hover:bg-slate-200 mb-6 disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -153,17 +179,16 @@ export default function Signup() {
 
           <div className="relative my-10">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-rose-500/20"></div>
+              <div className={`w-full border-t transition-colors duration-500 ${isBusiness ? 'border-blue-500/20' : 'border-rose-500/20'}`}></div>
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-[0.4em] text-rose-500/40 font-bold">
-              <span className="bg-[#120808] px-4">Standard Enrollment</span>
+            <div className={`relative flex justify-center text-[10px] uppercase tracking-[0.4em] font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-500/40' : 'text-rose-500/40'}`}>
+              <span className="bg-[#0c0707] px-4">Standard Enrollment</span>
             </div>
           </div>
 
-          {/* Email/Password Sign Up */}
           <form onSubmit={handleEmailSignup} className="space-y-5">
             <div className="relative group">
-              <label className="block text-[10px] uppercase tracking-widest text-rose-400/60 mb-2 ml-1 font-bold">Email Identity</label>
+              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Email Identity</label>
               <div className="relative">
                 <input
                   type="email"
@@ -171,15 +196,15 @@ export default function Signup() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-black/40 border border-rose-500/20 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-800"
+                  className={`w-full bg-black/40 border rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 transition-all placeholder:text-slate-800 ${isBusiness ? 'border-blue-500/20 focus:ring-blue-500/40' : 'border-rose-500/20 focus:ring-rose-500/40'}`}
                   placeholder="commander@nexus.io"
                 />
-                <Fingerprint className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-500/20 group-focus-within:text-rose-500/40 transition-colors" size={18} />
+                <Fingerprint className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-500 ${isBusiness ? 'text-blue-500/20' : 'text-rose-500/20'}`} size={18} />
               </div>
             </div>
 
             <div className="relative group">
-              <label className="block text-[10px] uppercase tracking-widest text-rose-400/60 mb-2 ml-1 font-bold">Secure Access Key</label>
+              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Secure Access Key</label>
               <div className="relative">
                 <input
                   type="password"
@@ -187,20 +212,20 @@ export default function Signup() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-black/40 border border-rose-500/20 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-800"
+                  className={`w-full bg-black/40 border rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 transition-all placeholder:text-slate-800 ${isBusiness ? 'border-blue-500/20 focus:ring-blue-500/40' : 'border-rose-500/20 focus:ring-rose-500/40'}`}
                   placeholder="••••••••"
                 />
-                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-500/20 group-focus-within:text-rose-500/40 transition-colors" size={18} />
+                <Lock className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-500 ${isBusiness ? 'text-blue-500/20' : 'text-rose-500/20'}`} size={18} />
               </div>
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-4 rounded-xl font-black tracking-[0.2em] transition-all duration-300 text-xs ${
-                accountType === 'customer' 
-                ? 'bg-rose-600 text-white hover:bg-rose-500 shadow-[0_0_20px_rgba(225,29,72,0.3)]' 
-                : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-[0_0_20px_rgba(5,150,105,0.3)]'
+              className={`w-full py-4 rounded-xl font-black tracking-[0.2em] transition-all duration-500 text-xs text-white hover:brightness-110 active:scale-[0.98] ${
+                isBusiness 
+                ? 'bg-blue-600 shadow-[0_0_20px_rgba(37,99,235,0.3)]' 
+                : 'bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.3)]'
               }`}
             >
               {loading ? 'PROCESSING...' : `ENROLL AS ${accountType.toUpperCase()}`}
@@ -209,13 +234,13 @@ export default function Signup() {
 
           <p className="mt-10 text-center text-xs text-slate-500 uppercase tracking-widest font-bold">
             Existing identity found?{' '}
-            <Link href="/login" className="text-rose-500 hover:text-rose-400 transition-all underline underline-offset-8 decoration-rose-500/30">
+            <Link href="/login" className={`transition-all underline underline-offset-8 decoration-white/10 hover:decoration-current ${isBusiness ? 'text-blue-500 hover:text-blue-400' : 'text-rose-500 hover:text-rose-400'}`}>
               Login to Console
             </Link>
           </p>
         </div>
 
-        <p className="mt-8 text-center text-[9px] text-rose-500/30 uppercase tracking-[0.5em] font-mono">
+        <p className={`mt-8 text-center text-[9px] uppercase tracking-[0.5em] font-mono transition-colors duration-500 ${isBusiness ? 'text-blue-500/30' : 'text-rose-500/30'}`}>
           RD-FLG Secure Enrollment Node #99-X
         </p>
       </div>

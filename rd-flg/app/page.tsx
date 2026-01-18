@@ -16,11 +16,21 @@ const bodyFont = IBM_Plex_Sans({
 
 export default function Home() {
   return (
-    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen bg-[#0a0505] text-slate-50 overflow-hidden`}>
+    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen bg-[#060505] text-slate-50 overflow-hidden`}>
       
-      {/* Background Ambient Glows - Shifted to Red/Orange */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_-20%,_rgba(225,29,72,0.15),_transparent_70%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,_rgba(249,115,22,0.08),_transparent_50%)]" />
+      {/* Balanced Pulsating Glow System */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(1.1); }
+        }
+        .animate-glow {
+          animation: pulse-glow 8s ease-in-out infinite;
+        }
+      `}} />
+
+      <div className="animate-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(225,29,72,0.3),_transparent_60%)]" />
+      <div className="animate-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,_rgba(37,99,235,0.3),_transparent_60%)]" style={{ animationDelay: '-4s' }} />
 
       {/* Navigation */}
       <nav className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-8">
@@ -32,7 +42,7 @@ export default function Home() {
         </div>
         <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
           <a href="#personal" className="hover:text-rose-500 transition-colors">Individual Defense</a>
-          <a href="#enterprise" className="hover:text-emerald-500 transition-colors">Enterprise Risk</a>
+          <a href="#enterprise" className="hover:text-blue-500 transition-colors">Enterprise Risk</a>
         </div>
         <div className="flex items-center gap-4">
           <Link href="/login" className="rounded-xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white hover:bg-white hover:text-black transition-all">
@@ -51,7 +61,7 @@ export default function Home() {
           </div>
           <h1 className="mb-8 max-w-5xl font-[var(--font-heading)] text-6xl font-bold leading-[1] tracking-tighter text-white lg:text-8xl">
             The end of the <br />
-            <span className="bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-rose-500 via-orange-500 to-blue-400 bg-clip-text text-transparent">
               "Blind Accept."
             </span>
           </h1>
@@ -60,7 +70,11 @@ export default function Home() {
             Identify predatory clauses before they become binding.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/signup" className="rounded-xl bg-rose-600 px-8 py-4 font-black uppercase tracking-widest text-white shadow-[0_0_30px_rgba(225,29,72,0.3)] hover:bg-rose-500 hover:shadow-rose-500/50 transition-all">
+            {/* GRADIENT BUTTON WITH ENHANCED INTERACTION */}
+            <Link 
+              href="/signup" 
+              className="group relative rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-blue-500 px-8 py-4 font-black uppercase tracking-widest text-white shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all duration-300 hover:scale-105 hover:brightness-110 hover:shadow-[0_0_40px_rgba(225,29,72,0.5)] active:scale-95"
+            >
               Initialize Defense
             </Link>
           </div>
@@ -68,8 +82,7 @@ export default function Home() {
 
         {/* Dual Track Section */}
         <div className="grid gap-8 lg:grid-cols-2">
-          
-          {/* PERSONAL TRACK - Rose/Orange */}
+          {/* PERSONAL TRACK */}
           <section id="personal" className="group relative rounded-3xl border border-rose-500/10 bg-[#120808] p-10 transition-all hover:border-rose-500/40">
             <div className="mb-6 flex items-center justify-between">
               <div className="rounded-xl bg-rose-500/10 p-4 text-rose-500 shadow-[inset_0_0_15px_rgba(225,29,72,0.1)]">
@@ -79,78 +92,31 @@ export default function Home() {
             </div>
             <h2 className="mb-4 font-[var(--font-heading)] text-3xl font-bold text-white">For Individuals</h2>
             <p className="mb-8 text-slate-400 leading-relaxed">
-              Upload any Terms of Service to expose "Red Flags." We maintain an immutable record of every contract you’ve accepted, alerting you the moment a company changes the rules.
+              Upload any Terms of Service to expose "Red Flags." We maintain an immutable record of every contract you’ve accepted.
             </p>
-            <ul className="mb-10 space-y-4 text-sm font-medium text-slate-300">
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/20 text-[10px] text-rose-500">01</span> 
-                Smart Clause Summaries
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/20 text-[10px] text-rose-500">02</span> 
-                Immutable Consent Vault
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/20 text-[10px] text-rose-500">03</span> 
-                Violation Detection Engine
-              </li>
-            </ul>
             <Link href="/login" className="inline-flex w-full items-center justify-center rounded-xl bg-rose-600/10 border border-rose-500/30 py-4 font-black uppercase tracking-widest text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
               Protect My Identity
             </Link>
           </section>
 
-          {/* ENTERPRISE TRACK - Emerald (The "Safety" accent) */}
-          <section id="enterprise" className="group relative rounded-3xl border border-emerald-500/10 bg-[#08120d] p-10 transition-all hover:border-emerald-500/40">
+          {/* ENTERPRISE TRACK */}
+          <section id="enterprise" className="group relative rounded-3xl border border-blue-500/10 bg-[#080810] p-10 transition-all hover:border-blue-500/40">
             <div className="mb-6 flex items-center justify-between">
-              <div className="rounded-xl bg-emerald-500/10 p-4 text-emerald-500 shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]">
+              <div className="rounded-xl bg-blue-500/10 p-4 text-blue-500 shadow-[inset_0_0_15px_rgba(16,185,129,0.1)]">
                 <Zap size={32} strokeWidth={1.5} />
               </div>
-              <span className="text-[10px] font-black text-emerald-500/50 uppercase tracking-[0.2em]">Sanitization Mode</span>
+              <span className="text-[10px] font-black text-blue-500/50 uppercase tracking-[0.2em]">Sanitization Mode</span>
             </div>
             <h2 className="mb-4 font-[var(--font-heading)] text-3xl font-bold text-white">For Enterprise</h2>
             <p className="mb-8 text-slate-400 leading-relaxed">
-              Scan draft agreements against thousands of historical disputes and regulatory actions. Flag high-risk language before it reaches the public or the courtroom.
+              Scan draft agreements against thousands of historical disputes. Flag high-risk language before it reaches the courtroom.
             </p>
-            <ul className="mb-10 space-y-4 text-sm font-medium text-slate-300">
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] text-emerald-400">01</span> 
-                Draft Sanitization Engine
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] text-emerald-400">02</span> 
-                Litigation Risk Benchmarks
-              </li>
-              <li className="flex items-center gap-3">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500/20 text-[10px] text-emerald-400">03</span> 
-                Compliance Pre-Check
-              </li>
-            </ul>
-            <Link href="/login" className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600/10 border border-emerald-500/30 py-4 font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all">
+            <Link href="/login" className="inline-flex w-full items-center justify-center rounded-xl bg-blue-600/10 border border-blue-500/30 py-4 font-black uppercase tracking-widest text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
               Sanitize Documents
             </Link>
           </section>
         </div>
-
-        {/* Bottom Status Branding */}
-        <section className="mt-32 border-t border-white/5 pt-20 text-center">
-          <div className="flex justify-center gap-8 opacity-30 grayscale hover:grayscale-0 transition-all">
-             <div className="h-4 w-20 bg-white/20 rounded" />
-             <div className="h-4 w-20 bg-white/20 rounded" />
-             <div className="h-4 w-20 bg-white/20 rounded" />
-          </div>
-          <p className="mt-12 mx-auto max-w-xl text-xs uppercase tracking-[0.5em] text-rose-500/40 font-bold">
-            Red-Flag Transparency Protocol v7.1
-          </p>
-        </section>
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#0a0505] px-6 py-12 text-center">
-        <p className="text-[9px] text-slate-600 uppercase tracking-[0.4em] font-mono">
-          © 2026 RD-FLG Terminal • Encrypted Endpoint • 0.0.0.0:SECURE
-        </p>
-      </footer>
     </div>
   );
 }

@@ -38,7 +38,6 @@ export default function Login() {
         const role = userData.role;
         router.push(role === 'business' ? '/business-dashboard' : '/customer-dashboard');
       } else {
-        // If user logged in but has no doc, default to customer
         await setDoc(userDocRef, {
           email: user.email,
           role: 'customer',
@@ -80,10 +79,21 @@ export default function Login() {
   };
 
   return (
-    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen flex items-center justify-center bg-[#0a0505] text-slate-50 px-4 overflow-hidden`}>
-      {/* Red/Orange Warning Glows */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(225,29,72,0.12),_transparent_50%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,_rgba(249,115,22,0.08),_transparent_40%)]" />
+    <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen flex items-center justify-center bg-[#060505] text-slate-50 px-4 overflow-hidden`}>
+      
+      {/* BALANCED BACKGROUND GLOW SYSTEM */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.35; transform: scale(1.1); }
+        }
+        .animate-glow {
+          animation: pulse-glow 8s ease-in-out infinite;
+        }
+      `}} />
+
+      <div className="animate-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_rgba(225,29,72,0.25),_transparent_60%)]" />
+      <div className="animate-glow pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,_rgba(37,99,235,0.2),_transparent_60%)]" style={{ animationDelay: '-4s' }} />
 
       <div className="relative z-10 w-full max-w-md">
         {/* Logo/Brand Branding */}
@@ -92,25 +102,25 @@ export default function Login() {
             <div className="h-8 w-8 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.5)] transition-transform group-hover:scale-110 flex items-center justify-center">
                 <ShieldAlert size={18} className="text-white" />
             </div>
-            <span className="font-[var(--font-heading)] text-2xl font-bold tracking-tight text-white group-hover:text-rose-500 transition-colors">RD-FLG</span>
+            <span className="font-[var(--font-heading)] text-2xl font-bold tracking-tight text-white transition-colors">RD-FLG</span>
           </Link>
-          <div className="h-[1px] w-12 bg-rose-500/50 mb-4" />
+          <div className="h-[1px] w-12 bg-gradient-to-r from-transparent via-rose-500/50 to-transparent mb-4" />
           <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-rose-500/80">Terminal Access</h2>
         </div>
 
-        <div className="rounded-3xl border border-rose-500/20 bg-rose-500/5 p-8 backdrop-blur-xl shadow-2xl">
+        <div className="rounded-3xl border border-white/10 bg-[#120808]/60 backdrop-blur-2xl p-8 shadow-2xl">
           {error && (
             <div className="mb-6 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200 animate-pulse">
-              <span className="font-bold uppercase text-[10px] block mb-1">Access Denied</span>
+              <span className="font-bold uppercase text-[10px] block mb-1 text-rose-500">Access Denied</span>
               {error}
             </div>
           )}
 
-          {/* Google Login */}
+          {/* Google Login - Interactive Styling */}
           <button
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="group relative w-full flex items-center justify-center gap-3 bg-white px-4 py-3.5 rounded-xl text-slate-950 font-bold transition-all hover:bg-rose-50 disabled:opacity-50"
+            className="group relative w-full flex items-center justify-center gap-3 bg-white px-4 py-3.5 rounded-xl text-slate-950 font-black text-xs tracking-widest transition-all hover:scale-[1.02] hover:bg-slate-100 active:scale-95 disabled:opacity-50"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -123,17 +133,17 @@ export default function Login() {
 
           <div className="relative my-10">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-rose-500/20"></div>
+              <div className="w-full border-t border-white/10"></div>
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] text-rose-500/50">
-              <span className="bg-[#120808] px-4">Standard Protocol</span>
+            <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold">
+              <span className="bg-[#0c0707] px-4">Standard Protocol</span>
             </div>
           </div>
 
           {/* Email/Password Login */}
           <form onSubmit={handleEmailLogin} className="space-y-6">
             <div className="relative group">
-              <label className="block text-[10px] uppercase tracking-widest text-rose-400/60 mb-2 ml-1 font-bold">
+              <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-2 ml-1 font-bold transition-colors group-focus-within:text-rose-500">
                 Operator Identity
               </label>
               <div className="relative">
@@ -143,15 +153,15 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-black/40 border border-rose-500/20 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-700"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-800"
                   placeholder="operator@nexus.io"
                 />
-                <Fingerprint className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-500/20 group-focus-within:text-rose-500/50 transition-colors" size={18} />
+                <Fingerprint className="absolute right-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-rose-500/40 transition-colors" size={18} />
               </div>
             </div>
 
             <div className="relative group">
-              <label className="block text-[10px] uppercase tracking-widest text-rose-400/60 mb-2 ml-1 font-bold">
+              <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-2 ml-1 font-bold transition-colors group-focus-within:text-rose-500">
                 Encryption Key
               </label>
               <div className="relative">
@@ -161,26 +171,27 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
-                  className="w-full bg-black/40 border border-rose-500/20 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-700"
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-800"
                   placeholder="••••••••"
                 />
-                <Key className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-500/20 group-focus-within:text-rose-500/50 transition-colors" size={18} />
+                <Key className="absolute right-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-rose-500/40 transition-colors" size={18} />
               </div>
             </div>
 
+            {/* GRADIENT SUBMIT BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-rose-600 border border-rose-500 text-white rounded-xl px-4 py-4 font-black tracking-[0.2em] hover:bg-rose-500 hover:shadow-[0_0_25px_rgba(225,29,72,0.4)] transition-all disabled:opacity-50"
+              className="w-full relative rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-blue-500 px-4 py-4 font-black text-xs uppercase tracking-[0.2em] text-white shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all duration-300 hover:scale-[1.02] hover:brightness-110 hover:shadow-[0_0_30px_rgba(225,29,72,0.4)] active:scale-95 disabled:opacity-50"
             >
               {loading ? 'DECRYPTING...' : 'INITIATE CONSOLE'}
             </button>
           </form>
 
           <div className="mt-10 text-center">
-            <p className="text-xs text-slate-500 uppercase tracking-widest">
+            <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
               Unregistered Identity?{' '}
-              <Link href="/signup" className="text-rose-500 hover:text-orange-400 font-bold transition-colors underline underline-offset-4 decoration-rose-500/30 hover:decoration-orange-400">
+              <Link href="/signup" className="text-rose-500 hover:text-white transition-all underline underline-offset-8 decoration-rose-500/30">
                 Register Protocol
               </Link>
             </p>
@@ -189,11 +200,11 @@ export default function Login() {
 
         {/* System Info Line */}
         <div className="mt-8 flex items-center justify-between px-2">
-            <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent to-rose-500/20" />
-            <span className="mx-4 text-[9px] text-rose-500/40 uppercase tracking-[0.5em] font-mono">
+            <div className="h-[1px] flex-grow bg-gradient-to-r from-transparent to-white/10" />
+            <span className="mx-4 text-[9px] text-slate-600 uppercase tracking-[0.5em] font-mono">
                 System Status: Vigilant
             </span>
-            <div className="h-[1px] flex-grow bg-gradient-to-l from-transparent to-rose-500/20" />
+            <div className="h-[1px] flex-grow bg-gradient-to-l from-transparent to-white/10" />
         </div>
       </div>
     </div>
