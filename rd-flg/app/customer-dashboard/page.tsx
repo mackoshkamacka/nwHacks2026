@@ -7,7 +7,7 @@ import { collection, query, where, onSnapshot, orderBy, doc, getDoc } from "fire
 import { onAuthStateChanged, User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import Link from 'next/link';
-import { Zap, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { Zap, AlertTriangle, ShieldAlert, AlertCircle, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
 
 const headingFont = Space_Grotesk({
   subsets: ["latin"],
@@ -37,7 +37,20 @@ export default function CustomerDashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [tosHistory, setTosHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
   const router = useRouter();
+
+  const toggleCard = (id: string) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
@@ -73,7 +86,13 @@ export default function CustomerDashboard() {
               acceptedOn: data.snapshot?.toDate().toLocaleDateString() || "Recently",
               riskScore: data.riskScore || 0,
               flags: data.redFlags?.length || 0,
-              reports: `${data.clauseCount || 0} clauses analyzed`
+              reports: `${data.clauseCount || 0} clauses analyzed`,
+              summary: data.summary || "No summary available",
+              clauseCount: data.clauseCount || 0,
+              redFlags: data.redFlags || [],
+              cautions: data.cautions || [],
+              positives: data.positives || [],
+              violations: data.violations || [],
             };
           });
           setTosHistory(liveData);
@@ -125,15 +144,27 @@ export default function CustomerDashboard() {
         </section>
 
         {/* Risk Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="rounded-2xl border border-white/5 bg-white/5 p-6 hover:bg-white/10 transition-colors">
             <p className="text-xs uppercase text-slate-500 mb-1 font-bold tracking-widest">Audited Assets</p>
             <p className="text-3xl font-bold text-white">{tosHistory.length}</p>
           </div>
           <div className="rounded-2xl border border-rose-500/20 bg-rose-500/10 p-6">
-            <p className="text-xs uppercase text-rose-400/60 mb-1 font-bold tracking-widest">Danger Flags</p>
+            <p className="text-xs uppercase text-rose-400/60 mb-1 font-bold tracking-widest">Red Flags</p>
             <p className="text-3xl font-bold text-rose-500">
               {tosHistory.reduce((acc, curr) => acc + curr.flags, 0)}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/10 p-6">
+            <p className="text-xs uppercase text-orange-400/60 mb-1 font-bold tracking-widest">Cautions</p>
+            <p className="text-3xl font-bold text-orange-500">
+              {tosHistory.reduce((acc, curr) => acc + curr.cautions.length, 0)}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-6">
+            <p className="text-xs uppercase text-emerald-400/60 mb-1 font-bold tracking-widest">Positives</p>
+            <p className="text-3xl font-bold text-emerald-500">
+              {tosHistory.reduce((acc, curr) => acc + curr.positives.length, 0)}
             </p>
           </div>
         </div>
@@ -167,16 +198,16 @@ export default function CustomerDashboard() {
                       <h3 className="text-xl font-bold text-white group-hover:text-rose-400 transition-colors tracking-tight">{entry.service}</h3>
                       <p className="text-xs text-slate-500 uppercase font-mono mt-1">Ref: {entry.id.slice(0,12)} • {entry.acceptedOn}</p>
                     </div>
-                    
+
                     <div className="w-full md:w-64">
                       <div className="flex justify-between text-[10px] uppercase font-black mb-2">
                         <span className={entry.riskScore > 70 ? "text-rose-500" : "text-amber-500"}>{riskLabel(entry.riskScore)}</span>
                         <span className="text-slate-400">{entry.riskScore}% Risk</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                        <div 
-                          className={`${riskTrack(entry.riskScore)} h-full transition-all duration-1000 ease-out`} 
-                          style={{ width: `${entry.riskScore}%` }} 
+                        <div
+                          className={`${riskTrack(entry.riskScore)} h-full transition-all duration-1000 ease-out`}
+                          style={{ width: `${entry.riskScore}%` }}
                         />
                       </div>
                     </div>
@@ -186,11 +217,105 @@ export default function CustomerDashboard() {
                         <p className={`text-lg font-black ${entry.flags > 0 ? 'text-rose-500' : 'text-slate-400'}`}>{entry.flags} Flags</p>
                         <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest italic">{entry.reports}</p>
                       </div>
-                      <Link href={`/analysis/${entry.id}`} className="p-3 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-500 transition-all">
-                         <Zap size={20} />
-                      </Link>
+                      <button
+                        onClick={() => toggleCard(entry.id)}
+                        className="p-3 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-500 transition-all"
+                      >
+                        {expandedCards.has(entry.id) ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                      </button>
                     </div>
                   </div>
+
+                  {/* Expanded Content */}
+                  {expandedCards.has(entry.id) && (
+                    <div className="mt-6 pt-6 border-t border-white/10 space-y-6">
+                      {/* Summary */}
+                      <div>
+                        <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest mb-2">Summary</p>
+                        <p className="text-sm text-slate-300">{entry.summary}</p>
+                      </div>
+
+                      {/* Stats Row */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="text-center p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
+                          <p className="text-2xl font-bold text-rose-500">{entry.redFlags.length}</p>
+                          <p className="text-[10px] uppercase text-rose-400/60 font-bold">Red Flags</p>
+                        </div>
+                        <div className="text-center p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                          <p className="text-2xl font-bold text-orange-500">{entry.cautions.length}</p>
+                          <p className="text-[10px] uppercase text-orange-400/60 font-bold">Cautions</p>
+                        </div>
+                        <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                          <p className="text-2xl font-bold text-emerald-500">{entry.positives.length}</p>
+                          <p className="text-[10px] uppercase text-emerald-400/60 font-bold">Positives</p>
+                        </div>
+                      </div>
+
+                      {/* Red Flags */}
+                      {entry.redFlags.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-rose-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                            <AlertTriangle size={12} /> Red Flags
+                          </p>
+                          <ul className="space-y-2">
+                            {entry.redFlags.map((flag: string, i: number) => (
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-rose-500/50">{flag}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Cautions */}
+                      {entry.cautions.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-orange-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                            <AlertCircle size={12} /> Cautions
+                          </p>
+                          <ul className="space-y-2">
+                            {entry.cautions.map((caution: string, i: number) => (
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-orange-500/50">{caution}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Positives */}
+                      {entry.positives.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-emerald-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                            <CheckCircle size={12} /> Positives
+                          </p>
+                          <ul className="space-y-2">
+                            {entry.positives.map((positive: string, i: number) => (
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-emerald-500/50">{positive}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Violations */}
+                      {entry.violations.length > 0 && (
+                        <div>
+                          <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest mb-2">Violations by Category</p>
+                          <div className="flex flex-wrap gap-2">
+                            {entry.violations.map((v: {label: string, count: number}, i: number) => (
+                              <span key={i} className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-slate-300">
+                                {v.label}: <span className="text-rose-400 font-bold">{v.count}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* View Full Analysis Link */}
+                      <Link
+                        href={`/analysis/${entry.id}`}
+                        className="inline-flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors"
+                      >
+                        <Zap size={14} /> View Full Analysis
+                      </Link>
+                    </div>
+                  )}
                 </div>
               ))
             )}
