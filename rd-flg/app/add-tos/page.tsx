@@ -258,7 +258,7 @@ export default function AddTos() {
               {submitting ? (
                 <>
                   <Activity size={16} className="animate-spin" /> 
-                  Analyzing Data Stream...
+                  Analyzing Your Input
                 </>
               ) : (
                 <>

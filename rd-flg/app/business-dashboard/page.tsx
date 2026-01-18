@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { auth, db } from "@/lib/firebase";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import { 
   Zap, 
@@ -68,6 +69,9 @@ export default function BusinessLanding() {
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [topViolations, setTopViolations] = useState<Array<{ label: string; count: number }>>([]);
+  const [topRedFlags, setTopRedFlags] = useState<Array<{ flag: string; count: number }>>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -77,9 +81,63 @@ export default function BusinessLanding() {
         return;
       }
       setUserEmail(currentUser.email);
+      fetchAnalyticsData();
     });
     return () => unsubscribe();
   }, [router]);
+
+  const fetchAnalyticsData = async () => {
+    try {
+      const q = query(
+        collection(db, "analyses"),
+        orderBy("createdAt", "desc"),
+        limit(50)
+      );
+      
+      const snapshot = await getDocs(q);
+      
+      const violationMap: Record<string, number> = {};
+      const redFlagMap: Record<string, number> = {};
+      
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        
+        // Aggregate violations
+        if (Array.isArray(data.violations)) {
+          data.violations.forEach((v: any) => {
+            if (v.label) {
+              violationMap[v.label] = (violationMap[v.label] || 0) + (v.count || 1);
+            }
+          });
+        }
+        
+        // Aggregate red flags
+        if (Array.isArray(data.redFlags)) {
+          data.redFlags.forEach((flag: string) => {
+            redFlagMap[flag] = (redFlagMap[flag] || 0) + 1;
+          });
+        }
+      });
+      
+      // Convert to sorted arrays
+      const sortedViolations = Object.entries(violationMap)
+        .map(([label, count]) => ({ label, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+      
+      const sortedFlags = Object.entries(redFlagMap)
+        .map(([flag, count]) => ({ flag, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+      
+      setTopViolations(sortedViolations);
+      setTopRedFlags(sortedFlags);
+    } catch (error) {
+      console.error("Failed to fetch analytics:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!mounted) return <div className="min-h-screen bg-[#060505]" />;
 
@@ -125,12 +183,10 @@ export default function BusinessLanding() {
         </section>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-2 gap-4">
           {[
             { label: "Active Violations", val: "0", color: "text-emerald-500", border: "border-emerald-500/20", bg: "bg-emerald-500/10" },
-            { label: "Global Trust Score", val: "68", color: "text-cyan-500", border: "border-cyan-500/20", bg: "bg-cyan-500/10" },
-            { label: "Community Reports", val: "1.2k", color: "text-blue-500", border: "border-blue-500/20", bg: "bg-blue-500/10" },
-            { label: "Risk Mitigation", val: "94%", color: "text-indigo-500", border: "border-indigo-500/20", bg: "bg-indigo-500/10" },
+            { label: "Global Trust Score", val: "0", color: "text-cyan-500", border: "border-cyan-500/20", bg: "bg-cyan-500/10" },
           ].map((stat, i) => (
             <div key={i} className={`rounded-2xl border ${stat.border} ${stat.bg} p-6 backdrop-blur-sm`}>
               <p className="text-[10px] uppercase text-slate-400 mb-1 font-bold tracking-widest">{stat.label}</p>
@@ -143,75 +199,84 @@ export default function BusinessLanding() {
         <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-md">
           <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h2 className="font-[var(--font-heading)] text-2xl font-bold text-white flex items-center gap-2">
-                Market Positioning
-              </h2>
-              <p className="text-xs text-slate-500 uppercase tracking-widest mt-1">Real-time competitive benchmark</p>
+                <h2 className="font-[var(--font-heading)] text-2xl font-bold text-white flex items-center gap-2">
+                  Industry Violation Trends
+                </h2>
+              <p className="text-xs text-slate-500 uppercase tracking-widest mt-1">Common violations & red flags from analyses</p>
             </div>
             <Link href="/business-dashboard/add-tos-business" className="rounded-xl bg-cyan-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-cyan-500 transition shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center gap-2">
               <Zap size={16} /> Run Compliance Audit
             </Link>
           </div>
 
-          <div className="space-y-4">
-            {[
-              { label: "Privacy score", you: "47/100", compA: "73", compB: "41", avg: "62" },
-              { label: "User trust (Reports)", you: "12,483", compA: "892", compB: "15k", avg: "4.1k" },
-              { label: "Revenue at risk", you: "$47M", compA: "$12M", compB: "$51M", avg: "$18M" },
-            ].map((metric, idx) => (
-              <div key={idx} className="group rounded-2xl border border-white/5 bg-[#0a0f1a]/80 p-6 hover:border-cyan-500/40 transition-all duration-300">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                       <Target className="text-cyan-500" size={12} />
-                       <p className="text-[10px] uppercase text-cyan-400 font-bold tracking-tighter">{metric.label}</p>
-                    </div>
-                    <h3 className="text-xl font-bold text-white group-hover:text-cyan-400 transition-colors tracking-tight">Market Comparison</h3>
-                  </div>
-
-                  {/* Benchmark HUD */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-8 flex-[2]">
-                    {[
-                      { l: "YOU", v: metric.you, c: "text-cyan-400" },
-                      { l: "COMP A", v: metric.compA, c: "text-slate-300" },
-                      { l: "COMP B", v: metric.compB, c: "text-slate-300" },
-                      { l: "AVG", v: metric.avg, c: "text-blue-500" },
-                    ].map((cell, i) => (
-                      <div key={i}>
-                        <p className="text-[9px] font-black text-slate-600 mb-1">{cell.l}</p>
-                        <p className={`text-lg font-bold font-mono ${cell.c}`}>{cell.v}</p>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Activity className="animate-spin text-cyan-500" size={32} />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Top Violations */}
+              <div>
+                <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <ShieldAlert size={14} /> Most Common Violations
+                </h3>
+                <div className="space-y-3">
+                  {topViolations.length > 0 ? (
+                    topViolations.map((violation, idx) => (
+                      <div key={idx} className="group rounded-2xl border border-white/5 bg-[#0a0f1a]/80 p-5 hover:border-cyan-500/40 transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Target className="text-rose-500" size={12} />
+                              <p className="text-xs text-slate-400">Violation Pattern #{idx + 1}</p>
+                            </div>
+                            <p className="text-base font-semibold text-white group-hover:text-cyan-400 transition-colors">{violation.label}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-2xl font-bold text-rose-400">{violation.count.toLocaleString()}</p>
+                            <p className="text-xs text-slate-500 uppercase">Reports</p>
+                          </div>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  
-                  <div className="hidden md:block">
-                     <TrendingDown className="text-rose-500/50" size={24} />
-                  </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500 italic">No violation data available yet. Run an audit to begin.</p>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
+
+              {/* Top Red Flags */}
+              <div>
+                <h3 className="text-sm font-bold text-rose-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <ShieldAlert size={14} /> Top Red Flags Detected
+                </h3>
+                <div className="space-y-3">
+                  {topRedFlags.length > 0 ? (
+                    topRedFlags.map((item, idx) => (
+                      <div key={idx} className="rounded-xl border border-rose-500/20 bg-rose-950/20 p-4">
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm text-rose-100 leading-relaxed flex-1">{item.flag}</p>
+                          <span className="text-xs font-mono font-bold text-rose-400 bg-rose-500/10 px-2 py-1 rounded border border-rose-500/30">
+                            {item.count}x
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-sm text-slate-500 italic">No red flags logged yet.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Global Impact CTA */}
         <section className="grid md:grid-cols-2 gap-6">
-          {/* Sentiment Card */}
-          <div className="rounded-3xl border border-white/5 bg-white/5 p-8 flex flex-col justify-between hover:border-cyan-500/20 transition-all group">
-            <div>
-              <h4 className="text-xl font-bold mb-2 font-[var(--font-heading)] text-white">Community Sentiment</h4>
-              <p className="text-sm text-slate-400 leading-relaxed">
-                Your current legal draft contains clauses that trigger "High Stress" warnings in 80% of your user base.
-              </p>
-            </div>
-            <button className="mt-6 text-sm font-bold text-cyan-400 flex items-center gap-2 hover:text-cyan-300 transition-colors">
-              View sentiment heatmap <Zap size={14} className="group-hover:animate-pulse" />
-            </button>
-          </div>
-          
           {/* NEW: Clean Version with no icon */}
           <div className="relative rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-cyan-900 via-sky-950 to-indigo-950 p-8 flex flex-col justify-between overflow-hidden">
 
-  <div className="relative z-10">
+  <div className="relative z-10 w-full">
     <div className="flex items-center gap-2 mb-3">
       <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-ping" />
       <span className="text-[10px] font-black uppercase tracking-[0.2em] text-cyan-300/80">
