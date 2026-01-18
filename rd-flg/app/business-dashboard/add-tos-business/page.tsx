@@ -170,7 +170,7 @@ export default function AddTosPage() {
                 disabled={loading}
                 className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-cyan-400 disabled:opacity-50"
               >
-                {loading ? "Parsing with Gemini..." : "Run Gemini parse"}
+                {loading ? "In progress..." : "Compare ToS with previous reports"}
               </button>
             </div>
           </div>
@@ -225,7 +225,7 @@ export default function AddTosPage() {
         </section>
 
         {/* Details Section */}
-        {analysis.riskScore > 0 && (
+        {/* {analysis.riskScore > 0 && (
           <section className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="space-y-4 rounded-3xl border border-white/10 bg-slate-900/70 p-6">
               <div className="flex items-center justify-between">
@@ -249,8 +249,8 @@ export default function AddTosPage() {
                 ))}
               </ul>
             </div>
-          </section>
-        )}
+          </section> } 
+        )}*/}
       </main>
     </div>
   );
