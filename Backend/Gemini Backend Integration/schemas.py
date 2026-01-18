@@ -67,3 +67,36 @@ TOS_ANALYSIS_SCHEMA = {
         "violations"
     ]
 }
+
+SUBMISSION_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "source": {
+            "type": "string",
+            "enum": ["paste", "url"],
+            "description": "Source of the terms of service - either pasted text or URL"
+        },
+        "tosUrl": {
+            "type": "string",
+            "description": "URL of the terms of service if source is 'url', otherwise null",
+            "nullable": True
+        },
+        "tosText": {
+            "type": "string",
+            "description": "The actual terms of service text content"
+        },
+        "wordCount": {
+            "type": "number",
+            "description": "Number of words in the terms of service text"
+        },
+        "notes": {
+            "type": "string",
+            "description": "Optional notes or comments about the submission"
+        }
+    },
+    "required": [
+        "source",
+        "tosText",
+        "wordCount"
+    ]
+}
