@@ -103,8 +103,8 @@ export default function AddTosPage() {
   if (!mounted) return <div className="min-h-screen bg-slate-950" />;
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-50">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.25),_transparent_55%)]" />
+    <div className="relative min-h-screen bg-[#060505] text-slate-50">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(6,182,212,0.15),_transparent_60%)]" />
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
         <header className="flex flex-col gap-4">
           <Link
@@ -137,7 +137,7 @@ export default function AddTosPage() {
                   value={tosUrl}
                   onChange={(event) => setTosUrl(event.target.value)}
                   placeholder="https://example.com/terms"
-                  className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                  className="w-full rounded-2xl border border-white/15 bg-transparent px-4 py-3 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -162,13 +162,13 @@ export default function AddTosPage() {
                   onChange={(event) => setTosText(event.target.value)}
                   placeholder="Paste text here..."
                   rows={10}
-                  className="w-full rounded-2xl border border-white/15 bg-slate-950/40 px-4 py-3 text-sm text-white focus:border-cyan-400 focus:outline-none"
+                  className="w-full rounded-2xl border border-white/15 bg-[#0a0f1a]/80 px-4 py-3 text-sm text-white focus:border-cyan-500 focus:outline-none"
                 />
               </div>
               <button
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="flex w-full items-center justify-center rounded-2xl bg-white py-3 text-sm font-semibold text-slate-900 transition hover:bg-cyan-400 disabled:opacity-50"
+                className="flex w-full items-center justify-center rounded-2xl bg-cyan-600 py-3 text-sm font-semibold text-white transition hover:bg-cyan-500 shadow-[0_0_20px_rgba(6,182,212,0.3)] disabled:opacity-50"
               >
                 {loading ? "In progress..." : "Compare ToS with previous reports"}
               </button>
@@ -190,7 +190,7 @@ export default function AddTosPage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-4xl font-bold text-cyan-400">
+                <p className="text-4xl font-bold text-cyan-500">
                   {analysis.riskScore}/100
                 </p>
                 <p className="text-xs uppercase text-slate-500">Risk Score</p>
@@ -213,9 +213,8 @@ export default function AddTosPage() {
                       className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-950/40 px-3 py-2"
                     >
                       <span className="text-slate-300">{violation.label}</span>
-                      <span className="text-cyan-300">
-                        <span className="font-mono font-semibold">{violation.count?.toLocaleString() ?? 0}</span>
-                        <span className="ml-1 text-xs text-slate-500">{violation.count === 1 ? "count" : "counts"}</span>
+                      <span className="font-mono font-semibold text-cyan-500">
+                        {violation.count?.toLocaleString() ?? 0}
                       </span>
                     </div>
                   ))}
