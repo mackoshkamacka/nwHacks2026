@@ -19,26 +19,13 @@ const serviceAccount = {
 
 export function getAdminDb() {
   if (!admin.apps.length) {
-    // Helpful log to ensure the key is being loaded (it won't log the actual key)
-    console.log("🚀 Attempting to initialize Firebase Admin for:", serviceAccount.projectId);
-    console.log("--- ENV CHECK ---");
-    console.log("Project ID:", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-    console.log("Key Exists:", !!process.env.FIREBASE_PRIVATE_KEY);
-    console.log("Key Name:", process.env.FIREBASE_PRIVATE_KEY);
-
     if (!serviceAccount.privateKey) {
-      throw new Error("❌ FIREBASE_PRIVATE_KEY is missing or undefined");
+      throw new Error("FIREBASE_PRIVATE_KEY is missing or undefined");
     }
 
-    try {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
-      });
-      console.log("✅ Firebase Admin successfully initialized");
-    } catch (error) {
-      console.error("❌ Firebase Admin initialization failed:", error);
-      throw error;
-    }
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
+    });
   }
   return admin.firestore();
 }

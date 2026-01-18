@@ -213,8 +213,9 @@ export default function AddTosPage() {
                       className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-950/40 px-3 py-2"
                     >
                       <span className="text-slate-300">{violation.label}</span>
-                      <span className="font-mono font-semibold text-cyan-300">
-                        {violation.count?.toLocaleString() ?? 0}
+                      <span className="text-cyan-300">
+                        <span className="font-mono font-semibold">{violation.count?.toLocaleString() ?? 0}</span>
+                        <span className="ml-1 text-xs text-slate-500">{violation.count === 1 ? "count" : "counts"}</span>
                       </span>
                     </div>
                   ))}
