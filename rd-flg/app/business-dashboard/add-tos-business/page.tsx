@@ -106,7 +106,7 @@ export default function AddTosPage() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.25),_transparent_55%)]" />
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
         <header className="flex flex-col gap-4">
-          <Link href="/consumer" className="text-xs uppercase tracking-[0.4em] text-slate-300 underline">← back</Link>
+          <Link href="/business-dashboard" className="text-xs uppercase tracking-[0.4em] text-slate-300 underline">← back</Link>
           <h1 className="text-4xl font-semibold tracking-tight text-white">Paste or link a Terms of Service</h1>
           <p className="text-base text-slate-300">
             Drop the full text or a public URL. We hand it to Gemini for clause extraction, risk scoring, and flag detection before you click “I agree.”
