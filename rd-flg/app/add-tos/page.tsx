@@ -32,6 +32,17 @@ const bodyFont = IBM_Plex_Sans({
   variable: "--font-body",
 });
 
+type AnalysisResult = {
+  service?: string;
+  riskScore: number;
+  summary: string;
+  clauseCount?: number;
+  redFlags?: string[];
+  cautions?: string[];
+  positives?: string[];
+  violations?: Array<{ label: string; count: number }>;
+};
+
 export default function AddTos() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,6 +52,10 @@ export default function AddTos() {
   const [tosText, setTosText] = useState('');
   const [tosUrl, setTosUrl] = useState('');
   const [error, setError] = useState('');
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
+  const [voiceLoading, setVoiceLoading] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
+  const [voiceUrl, setVoiceUrl] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -55,6 +70,14 @@ export default function AddTos() {
 
     return () => unsubscribeAuth();
   }, [router]);
+
+  useEffect(() => {
+    return () => {
+      if (voiceUrl) {
+        URL.revokeObjectURL(voiceUrl);
+      }
+    };
+  }, [voiceUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +109,12 @@ export default function AddTos() {
       });
 
       console.log('Audit complete and saved to records.');
-      router.push('/customer-dashboard');
+      setAnalysisResult(analysisResult);
+      setVoiceError('');
+      if (voiceUrl) {
+        URL.revokeObjectURL(voiceUrl);
+        setVoiceUrl(null);
+      }
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during deconstruction');
@@ -241,6 +269,73 @@ export default function AddTos() {
             </div>
           </button>
         </form>
+
+        {analysisResult && (
+          <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl space-y-6">
+            <div className="flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-[0.4em] text-rose-500">Gemini Analysis Ready</p>
+              <h2 className="text-3xl font-bold text-white">{analysisResult.service || serviceName}</h2>
+              <p className="text-slate-300 text-sm">Risk score: <span className="text-white font-semibold">{analysisResult.riskScore}</span>/100 • Clauses parsed: {analysisResult.clauseCount || '—'}</p>
+            </div>
+            <p className="text-sm text-slate-200 leading-relaxed">{analysisResult.summary}</p>
+
+            <div className="flex flex-wrap gap-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!analysisResult) return;
+                  try {
+                    setVoiceLoading(true);
+                    setVoiceError('');
+                    const response = await fetch('/api/voice-summary', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        text: `The risk score is ${analysisResult.riskScore} out of 100 after analysing ${analysisResult.clauseCount} clauses. The highest concerns includes these as follows: ${analysisResult.redFlags?.[0] || 'No major red flags detected.'} To summarize, ${analysisResult.summary}`,
+                      }),
+                    });
+
+                    if (!response.ok) {
+                      const data = await response.json().catch(() => ({}));
+                      throw new Error(data.error || 'Voice synthesis failed');
+                    }
+
+                    const blob = await response.blob();
+                    if (voiceUrl) URL.revokeObjectURL(voiceUrl);
+                    const url = URL.createObjectURL(blob);
+                    setVoiceUrl(url);
+                  } catch (err) {
+                    setVoiceError(err instanceof Error ? err.message : 'Unable to generate voice summary');
+                  } finally {
+                    setVoiceLoading(false);
+                  }
+                }}
+                className="rounded-xl bg-gradient-to-r from-rose-500 to-blue-500 px-6 py-3 text-xs font-black uppercase tracking-[0.3em] text-white shadow-[0_0_20px_rgba(225,29,72,0.25)] transition hover:scale-105 disabled:opacity-50"
+                disabled={voiceLoading}
+              >
+                {voiceLoading ? 'Synthesizing...' : 'Voice Description'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => router.push('/customer-dashboard')}
+                className="rounded-xl border border-white/15 px-6 py-3 text-xs font-black uppercase tracking-[0.3em] text-white/80 hover:text-white transition"
+              >
+                Return to dashboard
+              </button>
+            </div>
+
+            {voiceError && (
+              <p className="text-xs uppercase tracking-widest text-rose-400">{voiceError}</p>
+            )}
+
+            {voiceUrl && (
+              <div className="mt-4">
+                <audio controls src={voiceUrl} className="w-full" />
+              </div>
+            )}
+          </section>
+        )}
       </main>
     </div>
   );

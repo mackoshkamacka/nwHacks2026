@@ -35,10 +35,10 @@ export default function Home() {
       {/* Navigation */}
       <nav className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-8">
         <div className="flex items-center gap-2 group cursor-pointer">
-          <div className="h-7 w-7 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.6)] flex items-center justify-center transition-transform group-hover:scale-110">
+          {/* <div className="h-7 w-7 rounded bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.6)] flex items-center justify-center transition-transform group-hover:scale-110">
             <ShieldAlert size={16} className="text-white" />
-          </div>
-          <span className="font-[var(--font-heading)] text-xl font-bold tracking-tight text-white">RD-FLG</span>
+          </div> */}
+          {/* <span className="font-[var(--font-heading)] text-xl font-bold tracking-tight text-white">RD-FLG</span> */}
         </div>
         <div className="hidden md:flex items-center gap-8 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
           <a href="#personal" className="hover:text-rose-500 transition-colors">Individual Defense</a>
