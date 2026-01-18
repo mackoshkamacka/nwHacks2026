@@ -247,9 +247,6 @@ export default function AddTosPage() {
                               {issue.severity}
                             </span>
                           </div>
-                          <div className="mt-2 flex items-center justify-between text-xs">
-                            <span className="text-slate-400">{issue.userReports.toLocaleString()} similar user reports</span>
-                          </div>
                           <p className="mt-2 text-xs text-cyan-300">💡 {issue.recommendation}</p>
                         </div>
                       ))}
