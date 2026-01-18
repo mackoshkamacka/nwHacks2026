@@ -59,7 +59,7 @@ export default function RootLayout({
           </div>
         </header>
         <div className="pt-4">{children}</div>
-      > <AuthProvider>
+        <AuthProvider>
             {children}
         </AuthProvider>
 
