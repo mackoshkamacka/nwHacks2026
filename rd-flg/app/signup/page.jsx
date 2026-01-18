@@ -109,9 +109,9 @@ export default function Signup() {
             </div>
             <span className="font-[var(--font-heading)] text-3xl font-bold tracking-tight text-white">RD-FLG</span>
           </Link>
-          <h2 className="text-3xl font-bold text-white font-[var(--font-heading)] tracking-tight">Establish Identity</h2>
+          <h2 className="text-3xl font-bold text-white font-[var(--font-heading)] tracking-tight">Sign Up Below!</h2>
           <p className={`mt-2 uppercase text-[10px] tracking-[0.3em] font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-500/60' : 'text-rose-500/60'}`}>
-            Initialize {isBusiness ? 'Enterprise' : 'Legal'} Protection Protocol
+            Protect your {isBusiness ? 'Enterprises' : 'Legal'} interests by creating an account!
           </p>
         </div>
         
@@ -128,7 +128,7 @@ export default function Signup() {
           {/* Account Type Selection */}
           <div className="mb-8">
             <label className="block text-[10px] uppercase tracking-[0.2em] text-slate-500 mb-4 text-center font-bold">
-              Select Operating Mode
+              Select Usecase
             </label>
             <div className="grid grid-cols-2 gap-4">
               {/* Individual Toggle */}
@@ -142,8 +142,8 @@ export default function Signup() {
                 }`}
               >
                 <User className="w-6 h-6 mb-2" />
-                <span className="font-black text-xs tracking-widest">INDIVIDUAL</span>
-                <span className="text-[9px] opacity-60 uppercase mt-1 tracking-tighter">Personal Defense</span>
+                <span className="font-black text-xs tracking-widest">CUSTOMER</span>
+                <span className="text-[9px] opacity-60 uppercase mt-1 tracking-tighter">Personal Use</span>
               </button>
               
               {/* Enterprise Toggle - Now Blue */}
@@ -182,13 +182,13 @@ export default function Signup() {
               <div className={`w-full border-t transition-colors duration-500 ${isBusiness ? 'border-blue-500/20' : 'border-rose-500/20'}`}></div>
             </div>
             <div className={`relative flex justify-center text-[10px] uppercase tracking-[0.4em] font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-500/40' : 'text-rose-500/40'}`}>
-              <span className="bg-[#0c0707] px-4">Standard Enrollment</span>
+              <span className="bg-[#0c0707] px-4">Sign up with email</span>
             </div>
           </div>
 
           <form onSubmit={handleEmailSignup} className="space-y-5">
             <div className="relative group">
-              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Email Identity</label>
+              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Email</label>
               <div className="relative">
                 <input
                   type="email"
@@ -197,14 +197,14 @@ export default function Signup() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   className={`w-full bg-black/40 border rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 transition-all placeholder:text-slate-800 ${isBusiness ? 'border-blue-500/20 focus:ring-blue-500/40' : 'border-rose-500/20 focus:ring-rose-500/40'}`}
-                  placeholder="commander@nexus.io"
+                  placeholder="endouble@yew.plus"
                 />
                 <Fingerprint className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors duration-500 ${isBusiness ? 'text-blue-500/20' : 'text-rose-500/20'}`} size={18} />
               </div>
             </div>
 
             <div className="relative group">
-              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Secure Access Key</label>
+              <label className={`block text-[10px] uppercase tracking-widest mb-2 ml-1 font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-400/60' : 'text-rose-400/60'}`}>Password</label>
               <div className="relative">
                 <input
                   type="password"
@@ -228,14 +228,14 @@ export default function Signup() {
                 : 'bg-rose-600 shadow-[0_0_20px_rgba(225,29,72,0.3)]'
               }`}
             >
-              {loading ? 'PROCESSING...' : `ENROLL AS ${accountType.toUpperCase()}`}
+              {loading ? 'PROCESSING...' : `SIGNUP AS ${accountType.toUpperCase()}`}
             </button>
           </form>
 
           <p className="mt-10 text-center text-xs text-slate-500 uppercase tracking-widest font-bold">
-            Existing identity found?{' '}
+            Already have an account? {' '}
             <Link href="/login" className={`transition-all underline underline-offset-8 decoration-white/10 hover:decoration-current ${isBusiness ? 'text-blue-500 hover:text-blue-400' : 'text-rose-500 hover:text-rose-400'}`}>
-              Login to Console
+              Login Here
             </Link>
           </p>
         </div>

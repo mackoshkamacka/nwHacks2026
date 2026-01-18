@@ -105,7 +105,7 @@ export default function Login() {
             <span className="font-[var(--font-heading)] text-2xl font-bold tracking-tight text-white transition-colors">RD-FLG</span>
           </Link>
           <div className="h-[1px] w-12 bg-gradient-to-r from-transparent via-rose-500/50 to-transparent mb-4" />
-          <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-rose-500/80">Terminal Access</h2>
+          <h2 className="text-sm font-bold tracking-[0.2em] uppercase text-rose-500/80">enterprise & consumer Login page</h2>
         </div>
 
         <div className="rounded-3xl border border-white/10 bg-[#120808]/60 backdrop-blur-2xl p-8 shadow-2xl">
@@ -128,7 +128,7 @@ export default function Login() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {loading ? 'PROCESSING...' : 'UNSHACKLE WITH GOOGLE'}
+            {loading ? 'PROCESSING...' : 'LOGIN WITH GOOGLE'}
           </button>
 
           <div className="relative my-10">
@@ -136,7 +136,7 @@ export default function Login() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-[10px] uppercase tracking-[0.3em] text-slate-500 font-bold">
-              <span className="bg-[#0c0707] px-4">Standard Protocol</span>
+              <span className="bg-[#0c0707] px-4">Login with email below</span>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export default function Login() {
           <form onSubmit={handleEmailLogin} className="space-y-6">
             <div className="relative group">
               <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-2 ml-1 font-bold transition-colors group-focus-within:text-rose-500">
-                Operator Identity
+                Email
               </label>
               <div className="relative">
                 <input
@@ -154,7 +154,7 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3.5 text-white focus:outline-none focus:ring-2 focus:ring-rose-500/40 transition-all placeholder:text-slate-800"
-                  placeholder="operator@nexus.io"
+                  placeholder="endouble@yew.plus"
                 />
                 <Fingerprint className="absolute right-4 top-1/2 -translate-y-1/2 text-white/10 group-focus-within:text-rose-500/40 transition-colors" size={18} />
               </div>
@@ -162,7 +162,7 @@ export default function Login() {
 
             <div className="relative group">
               <label className="block text-[10px] uppercase tracking-widest text-slate-500 mb-2 ml-1 font-bold transition-colors group-focus-within:text-rose-500">
-                Encryption Key
+                Password
               </label>
               <div className="relative">
                 <input
@@ -184,15 +184,15 @@ export default function Login() {
               disabled={loading}
               className="w-full relative rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-blue-500 px-4 py-4 font-black text-xs uppercase tracking-[0.2em] text-white shadow-[0_0_20px_rgba(225,29,72,0.3)] transition-all duration-300 hover:scale-[1.02] hover:brightness-110 hover:shadow-[0_0_30px_rgba(225,29,72,0.4)] active:scale-95 disabled:opacity-50"
             >
-              {loading ? 'DECRYPTING...' : 'INITIATE CONSOLE'}
+              {loading ? 'LOADING...' : 'LOGIN WITH EMAIL'}
             </button>
           </form>
 
           <div className="mt-10 text-center">
             <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-              Unregistered Identity?{' '}
+              Not signed up yet? {' '} {' '}
               <Link href="/signup" className="text-rose-500 hover:text-white transition-all underline underline-offset-8 decoration-rose-500/30">
-                Register Protocol
+                Register here
               </Link>
             </p>
           </div>

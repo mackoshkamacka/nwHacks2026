@@ -24,13 +24,13 @@ const bodyFont = IBM_Plex_Sans({
 const riskTrack = (score: number) => {
   if (score >= 75) return "bg-rose-600 shadow-[0_0_10px_rgba(225,29,72,0.5)]";
   if (score >= 50) return "bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]";
-  return "bg-amber-400";
+  return "bg-sky-400 shadow-[0_0_10px_rgba(56,189,248,0.5)]"; // Changed to Sky Blue
 };
 
 const riskLabel = (score: number) => {
   if (score >= 75) return "Critical Violation";
   if (score >= 50) return "Caution Advised";
-  return "Clearance Level 1";
+  return "Clearance: Secure"; // Updated label for Blue/Safe
 };
 
 export default function CustomerDashboard() {
@@ -124,12 +124,10 @@ export default function CustomerDashboard() {
 
   return (
     <div className={`${bodyFont.className} ${headingFont.variable} relative min-h-screen bg-[#0a0505] text-slate-50`}>
-      {/* Red/Orange Warm Background Glows */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(225,29,72,0.15),_transparent_50%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.05),_transparent_40%)]" />
       
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12">
-        {/* Header with Warm Theme */}
         <section className="rounded-3xl border border-rose-500/20 bg-rose-500/5 p-8 backdrop-blur-md">
           <div className="flex items-center gap-3 mb-2">
             <ShieldAlert className="text-rose-500 w-5 h-5" />
@@ -143,7 +141,6 @@ export default function CustomerDashboard() {
           </p>
         </section>
 
-        {/* Risk Stats Grid */}
         <div className="grid grid-cols-4 gap-4">
           <div className="rounded-2xl border border-white/5 bg-white/5 p-6 hover:bg-white/10 transition-colors">
             <p className="text-xs uppercase text-slate-500 mb-1 font-bold tracking-widest">Audited Assets</p>
@@ -161,15 +158,15 @@ export default function CustomerDashboard() {
               {tosHistory.reduce((acc, curr) => acc + curr.cautions.length, 0)}
             </p>
           </div>
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-6">
-            <p className="text-xs uppercase text-emerald-400/60 mb-1 font-bold tracking-widest">Positives</p>
-            <p className="text-3xl font-bold text-emerald-500">
+          {/* CHANGED GREEN TO BLUE HERE */}
+          <div className="rounded-2xl border border-sky-500/20 bg-sky-500/10 p-6">
+            <p className="text-xs uppercase text-sky-400/60 mb-1 font-bold tracking-widest">Positives</p>
+            <p className="text-3xl font-bold text-sky-500">
               {tosHistory.reduce((acc, curr) => acc + curr.positives.length, 0)}
             </p>
           </div>
         </div>
 
-        {/* History List */}
         <section className="rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl">
           <div className="mb-8 flex items-center justify-between">
             <h2 className="font-[var(--font-heading)] text-2xl font-bold text-white flex items-center gap-2">
@@ -192,7 +189,7 @@ export default function CustomerDashboard() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                         <div className={`w-2 h-2 rounded-full animate-pulse ${entry.riskScore > 70 ? 'bg-rose-500' : 'bg-amber-500'}`} />
+                         <div className={`w-2 h-2 rounded-full animate-pulse ${entry.riskScore > 70 ? 'bg-rose-500' : entry.riskScore > 40 ? 'bg-amber-500' : 'bg-sky-500'}`} />
                          <p className="text-[10px] uppercase text-rose-400 font-bold tracking-tighter">{entry.category}</p>
                       </div>
                       <h3 className="text-xl font-bold text-white group-hover:text-rose-400 transition-colors tracking-tight">{entry.service}</h3>
@@ -201,7 +198,9 @@ export default function CustomerDashboard() {
 
                     <div className="w-full md:w-64">
                       <div className="flex justify-between text-[10px] uppercase font-black mb-2">
-                        <span className={entry.riskScore > 70 ? "text-rose-500" : "text-amber-500"}>{riskLabel(entry.riskScore)}</span>
+                        <span className={entry.riskScore > 70 ? "text-rose-500" : entry.riskScore > 40 ? "text-amber-500" : "text-sky-500"}>
+                          {riskLabel(entry.riskScore)}
+                        </span>
                         <span className="text-slate-400">{entry.riskScore}% Risk</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
@@ -226,16 +225,13 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
 
-                  {/* Expanded Content */}
                   {expandedCards.has(entry.id) && (
                     <div className="mt-6 pt-6 border-t border-white/10 space-y-6">
-                      {/* Summary */}
                       <div>
                         <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest mb-2">Summary</p>
                         <p className="text-sm text-slate-300">{entry.summary}</p>
                       </div>
 
-                      {/* Stats Row */}
                       <div className="grid grid-cols-3 gap-4">
                         <div className="text-center p-3 rounded-xl bg-rose-500/10 border border-rose-500/20">
                           <p className="text-2xl font-bold text-rose-500">{entry.redFlags.length}</p>
@@ -245,13 +241,13 @@ export default function CustomerDashboard() {
                           <p className="text-2xl font-bold text-orange-500">{entry.cautions.length}</p>
                           <p className="text-[10px] uppercase text-orange-400/60 font-bold">Cautions</p>
                         </div>
-                        <div className="text-center p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-                          <p className="text-2xl font-bold text-emerald-500">{entry.positives.length}</p>
-                          <p className="text-[10px] uppercase text-emerald-400/60 font-bold">Positives</p>
+                        {/* CHANGED GREEN TO BLUE HERE */}
+                        <div className="text-center p-3 rounded-xl bg-sky-500/10 border border-sky-500/20">
+                          <p className="text-2xl font-bold text-sky-500">{entry.positives.length}</p>
+                          <p className="text-[10px] uppercase text-sky-400/60 font-bold">Positives</p>
                         </div>
                       </div>
 
-                      {/* Red Flags */}
                       {entry.redFlags.length > 0 && (
                         <div>
                           <p className="text-[10px] uppercase text-rose-500 font-bold tracking-widest mb-2 flex items-center gap-2">
@@ -265,7 +261,6 @@ export default function CustomerDashboard() {
                         </div>
                       )}
 
-                      {/* Cautions */}
                       {entry.cautions.length > 0 && (
                         <div>
                           <p className="text-[10px] uppercase text-orange-500 font-bold tracking-widest mb-2 flex items-center gap-2">
@@ -279,21 +274,20 @@ export default function CustomerDashboard() {
                         </div>
                       )}
 
-                      {/* Positives */}
+                      {/* CHANGED GREEN TO BLUE HERE */}
                       {entry.positives.length > 0 && (
                         <div>
-                          <p className="text-[10px] uppercase text-emerald-500 font-bold tracking-widest mb-2 flex items-center gap-2">
+                          <p className="text-[10px] uppercase text-sky-500 font-bold tracking-widest mb-2 flex items-center gap-2">
                             <CheckCircle size={12} /> Positives
                           </p>
                           <ul className="space-y-2">
                             {entry.positives.map((positive: string, i: number) => (
-                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-emerald-500/50">{positive}</li>
+                              <li key={i} className="text-sm text-slate-300 pl-4 border-l-2 border-sky-500/50">{positive}</li>
                             ))}
                           </ul>
                         </div>
                       )}
 
-                      {/* Violations */}
                       {entry.violations.length > 0 && (
                         <div>
                           <p className="text-[10px] uppercase text-slate-500 font-bold tracking-widest mb-2">Violations by Category</p>
@@ -307,7 +301,6 @@ export default function CustomerDashboard() {
                         </div>
                       )}
 
-                      {/* View Full Analysis Link */}
                       <Link
                         href={`/analysis/${entry.id}`}
                         className="inline-flex items-center gap-2 text-sm text-rose-400 hover:text-rose-300 transition-colors"
