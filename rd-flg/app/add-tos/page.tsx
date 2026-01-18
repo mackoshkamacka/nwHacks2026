@@ -32,7 +32,7 @@ export default function AddTos() {
   const [error, setError] = useState('');
   const router = useRouter();
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:6767';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3000';
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
