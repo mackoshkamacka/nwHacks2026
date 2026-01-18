@@ -16,6 +16,8 @@ const bodyFont = IBM_Plex_Sans({
   variable: "--font-body",
 });
 
+import { AuthProvider } from '@/lib/AuthContext'; 
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -57,6 +59,10 @@ export default function RootLayout({
           </div>
         </header>
         <div className="pt-4">{children}</div>
+      > <AuthProvider>
+            {children}
+        </AuthProvider>
+
       </body>
     </html>
   );
