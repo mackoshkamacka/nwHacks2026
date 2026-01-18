@@ -45,23 +45,25 @@ export default function RootLayout({
       >
         <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 px-6 py-4 text-sm text-black backdrop-blur dark:border-white/10 dark:bg-black/70 dark:text-white">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between">
-            <Link href="/consumer" className="font-semibold tracking-tight">
+            <Link href="/" className="font-semibold tracking-tight">
               rd-flg
             </Link>
             <nav className="flex gap-4">
-              <Link className="transition hover:text-sky-500" href="/consumer">
-                Dashboard
+              <Link className="transition hover:text-sky-500" href="/login">
+                Login
               </Link>
-              <Link className="transition hover:text-sky-500" href="/consumer/add-tos">
-                Add ToS
+              <Link className="transition hover:text-sky-500" href="/signup">
+                Sign Up
               </Link>
             </nav>
           </div>
         </header>
-        <div className="pt-4">{children}</div>
-      > <AuthProvider>
-            {children}
-        </AuthProvider>
+        <div className="pt-4">
+            <AuthProvider>
+                {children}
+            </AuthProvider>
+        </div>
+        
 
       </body>
     </html>
