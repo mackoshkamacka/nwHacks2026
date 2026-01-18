@@ -103,12 +103,6 @@ export default function Signup() {
 
       <div className="relative z-10 w-full max-w-xl">
         <div className="flex flex-col items-center mb-8 text-center">
-          <Link href="/" className="flex items-center gap-2 mb-6 group">
-            <div className={`h-10 w-10 rounded shadow-[0_0_25px_${themeGlow}] transition-all duration-500 group-hover:scale-110 flex items-center justify-center ${isBusiness ? 'bg-blue-600' : 'bg-rose-600'}`}>
-                <ShieldCheck className="text-white" size={24} />
-            </div>
-            <span className="font-[var(--font-heading)] text-3xl font-bold tracking-tight text-white">RD-FLG</span>
-          </Link>
           <h2 className="text-3xl font-bold text-white font-[var(--font-heading)] tracking-tight">Sign Up Below!</h2>
           <p className={`mt-2 uppercase text-[10px] tracking-[0.3em] font-bold transition-colors duration-500 ${isBusiness ? 'text-blue-500/60' : 'text-rose-500/60'}`}>
             Protect your {isBusiness ? 'Enterprises' : 'Legal'} interests by creating an account!
