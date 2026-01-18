@@ -15,11 +15,12 @@ env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(env_path)
 
 app = Flask(__name__)
-CORS(
-    app,
-    resources={r"/api/*": {"origins": ["https://rd-flg.tech"]}},
-    supports_credentials=False
-)
+CORS(app)
+# CORS(
+#     app,
+#     resources={r"/api/*": {"origins": ["https://rd-flg.tech"]}},
+#     supports_credentials=False
+# )
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def analyze_tos(tos_text: str, service_name: str = "Unknown Service") -> dict:
